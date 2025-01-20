@@ -1,6 +1,6 @@
 'use client';
 
-import { useEffect, useState } from 'react';
+import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
@@ -39,7 +39,7 @@ interface PageData {
   createdAt: string;
 }
 
-export default function FinalizarPage() {
+function FinalizarContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [pageData, setPageData] = useState<PageData | null>(null);
   const router = useRouter();
@@ -307,5 +307,22 @@ export default function FinalizarPage() {
         </Card>
       </div>
     </div>
+  );
+}
+
+export default function FinalizarPage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 border-4 border-romantic-200 border-t-romantic-500 rounded-full animate-spin mx-auto" />
+            <p className="text-romantic-600">Carregando...</p>
+          </div>
+        </div>
+      }
+    >
+      <FinalizarContent />
+    </Suspense>
   );
 }

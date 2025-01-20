@@ -7,13 +7,13 @@ import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
 import { Calendar, Heart, Music, Upload } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/image-upload';
-import { useState, useEffect } from 'react';
+import { useState, useEffect, Suspense } from 'react';
 import { TemplateType, templates } from '@/components/templates';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePlan, PlanType, PLANS } from '@/contexts/PlanContext';
 import { toast } from 'sonner';
 
-export default function CriarPage() {
+function CreateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { plan, setPlan } = usePlan();
@@ -311,5 +311,22 @@ export default function CriarPage() {
         </div>
       )}
     </div>
+  );
+}
+
+export default function CreatePage() {
+  return (
+    <Suspense
+      fallback={
+        <div className="min-h-screen flex items-center justify-center">
+          <div className="text-center space-y-4">
+            <div className="w-16 h-16 border-4 border-romantic-200 border-t-romantic-500 rounded-full animate-spin mx-auto" />
+            <p className="text-romantic-600">Carregando...</p>
+          </div>
+        </div>
+      }
+    >
+      <CreateContent />
+    </Suspense>
   );
 }
