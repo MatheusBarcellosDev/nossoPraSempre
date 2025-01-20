@@ -2,43 +2,63 @@ import { NextResponse } from 'next/server';
 import Stripe from 'stripe';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
-  apiVersion: '2023-10-16',
+  apiVersion: '2024-12-18.acacia',
 });
 
 export async function POST(req: Request) {
   try {
-    const { pageId } = await req.json();
+    const { slug, plano } = await req.json();
+
+    // Definir o preço baseado no plano
+    const amount = plano === 'basic' ? 1990 : 2990; // R$ 19,90 ou R$ 29,90
 
     const session = await stripe.checkout.sessions.create({
-      payment_method_types: ['card'],
+      ui_mode: 'embedded',
       line_items: [
         {
           price_data: {
             currency: 'brl',
             product_data: {
-              name: 'Página Personalizada para Casal',
-              description:
-                'Crie uma página única para compartilhar sua história de amor',
+              name: `Plano ${plano === 'basic' ? 'Básico' : 'Premium'}`,
             },
-            unit_amount: 1000, // R$ 10,00
+            unit_amount: amount,
           },
           quantity: 1,
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?success=true`,
-      cancel_url: `${process.env.NEXT_PUBLIC_APP_URL}/dashboard?canceled=true`,
+      return_url: `${process.env.NEXT_PUBLIC_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
       metadata: {
-        pageId,
+        slug,
+        plano,
       },
     });
 
-    return NextResponse.json({ url: session.url });
-  } catch (error) {
-    console.error('Error creating checkout session:', error);
-    return NextResponse.json(
-      { error: 'Error creating checkout session' },
-      { status: 500 }
-    );
+    return NextResponse.json({ clientSecret: session.client_secret });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
+  }
+}
+
+export async function GET(req: Request) {
+  try {
+    const { searchParams } = new URL(req.url);
+    const sessionId = searchParams.get('session_id');
+
+    if (!sessionId) {
+      return NextResponse.json(
+        { error: 'Session ID required' },
+        { status: 400 }
+      );
+    }
+
+    const session = await stripe.checkout.sessions.retrieve(sessionId);
+
+    return NextResponse.json({
+      status: session.status,
+      customer_email: session.customer_details?.email,
+    });
+  } catch (err: any) {
+    return NextResponse.json({ error: err.message }, { status: 500 });
   }
 }

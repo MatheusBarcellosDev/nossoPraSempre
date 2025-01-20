@@ -8,7 +8,6 @@ export async function GET(
   try {
     const page = await prisma.page.findUnique({
       where: { slug: params.slug },
-      include: { fotos: true },
     });
 
     if (!page) {

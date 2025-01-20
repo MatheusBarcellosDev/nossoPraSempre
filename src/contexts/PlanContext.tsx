@@ -1,15 +1,7 @@
 'use client';
 
 import { createContext, useContext, useState } from 'react';
-
-export type PlanType = 'basic' | 'premium';
-
-interface PlanInfo {
-  type: PlanType;
-  maxPhotos: number;
-  duration: '1 ano' | 'vitalício';
-  price: number;
-}
+import { PlanType, PlanInfo, PLANS } from '@/constants/plans';
 
 interface PlanContextType {
   plan: PlanInfo | null;
@@ -18,20 +10,7 @@ interface PlanContextType {
 
 const PlanContext = createContext<PlanContextType | undefined>(undefined);
 
-export const plans: Record<PlanType, PlanInfo> = {
-  basic: {
-    type: 'basic',
-    maxPhotos: 3,
-    duration: '1 ano',
-    price: 19.9,
-  },
-  premium: {
-    type: 'premium',
-    maxPhotos: 6,
-    duration: 'vitalício',
-    price: 29.9,
-  },
-};
+export { PLANS, type PlanType };
 
 export function PlanProvider({ children }: { children: React.ReactNode }) {
   const [plan, setPlan] = useState<PlanInfo | null>(null);

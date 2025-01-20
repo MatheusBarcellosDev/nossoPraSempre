@@ -10,7 +10,7 @@ import { ImageUpload } from '@/components/ui/image-upload';
 import { useState, useEffect } from 'react';
 import { TemplateType, templates } from '@/components/templates';
 import { useRouter, useSearchParams } from 'next/navigation';
-import { usePlan, plans, PlanType } from '@/contexts/PlanContext';
+import { usePlan, PlanType, PLANS } from '@/contexts/PlanContext';
 import { toast } from 'sonner';
 
 export default function CriarPage() {
@@ -21,11 +21,11 @@ export default function CriarPage() {
 
   useEffect(() => {
     const planType = searchParams.get('plan') as PlanType;
-    if (!planType || !plans[planType]) {
+    if (!planType || !PLANS[planType]) {
       router.push('/');
       return;
     }
-    setPlan(plans[planType]);
+    setPlan(PLANS[planType]);
   }, [searchParams, setPlan, router]);
 
   const [formData, setFormData] = useState({

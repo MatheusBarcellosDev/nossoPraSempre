@@ -2,6 +2,7 @@
 
 import { CldUploadWidget } from 'next-cloudinary';
 import { Upload } from 'lucide-react';
+import Image from 'next/image';
 
 export interface ImageUploadProps {
   onUpload: (urls: string[]) => void;
@@ -38,7 +39,7 @@ export function ImageUpload({
           <div
             onClick={() => !disabled && open?.()}
             className={`
-              w-full border-2 border-dashed rounded-lg p-20
+              relative w-full border-2 border-dashed rounded-lg p-20
               hover:bg-gray-50 transition cursor-pointer
               flex flex-col items-center justify-center gap-4
               ${disabled ? 'opacity-50 cursor-not-allowed' : ''}

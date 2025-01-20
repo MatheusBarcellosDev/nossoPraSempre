@@ -1,13 +1,12 @@
-import { NextAuthOptions } from 'next-auth';
 import NextAuth from 'next-auth/next';
 import CredentialsProvider from 'next-auth/providers/credentials';
-import { PrismaAdapter } from '@auth/prisma-adapter';
+import { PrismaAdapter } from '@next-auth/prisma-adapter';
 import { PrismaClient } from '@prisma/client';
 import bcrypt from 'bcryptjs';
 
 const prisma = new PrismaClient();
 
-export const authOptions: NextAuthOptions = {
+const handler = NextAuth({
   adapter: PrismaAdapter(prisma),
   providers: [
     CredentialsProvider({
@@ -54,8 +53,6 @@ export const authOptions: NextAuthOptions = {
   pages: {
     signIn: '/login',
   },
-};
-
-const handler = NextAuth(authOptions);
+});
 
 export { handler as GET, handler as POST };

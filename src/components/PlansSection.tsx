@@ -1,9 +1,21 @@
-'use client';
-
 import { Check, Info } from 'lucide-react';
 import { Card, CardContent } from '@/components/ui/card';
-import { plans } from '@/contexts/PlanContext';
 import Link from 'next/link';
+
+const PLANS = {
+  basic: {
+    type: 'basic',
+    maxPhotos: 3,
+    duration: '1 ano',
+    price: 19.9,
+  },
+  premium: {
+    type: 'premium',
+    maxPhotos: 6,
+    duration: 'vitalício',
+    price: 29.9,
+  },
+};
 
 export function PlansSection() {
   return (
@@ -26,10 +38,10 @@ export function PlansSection() {
                   Plano Básico
                 </h3>
                 <div className="text-4xl font-bold text-romantic-600 flex items-center justify-center gap-2">
-                  R$ {plans.basic.price.toFixed(2)}
+                  R$ {PLANS.basic.price.toFixed(2)}
                 </div>
                 <p className="text-romantic-500 text-sm">
-                  Pagamento único • {plans.basic.duration}
+                  Pagamento único • {PLANS.basic.duration}
                 </p>
               </div>
 
@@ -40,7 +52,7 @@ export function PlansSection() {
                 </div>
                 <div className="flex items-center gap-2 text-romantic-700">
                   <Check className="w-5 h-5 text-romantic-500" />
-                  <span>{plans.basic.maxPhotos} fotos do casal</span>
+                  <span>{PLANS.basic.maxPhotos} fotos do casal</span>
                 </div>
                 <div className="flex items-center gap-2 text-romantic-700">
                   <Check className="w-5 h-5 text-romantic-500" />
@@ -66,38 +78,38 @@ export function PlansSection() {
             <div className="absolute top-0 right-0 bg-white/10 p-2 px-3 rounded-bl-lg text-sm font-medium">
               Recomendado
             </div>
-            <CardContent className="p-8 space-y-6">
+            <CardContent className="p-8 space-y-6 relative">
               <div className="space-y-2 text-center">
                 <h3 className="text-2xl font-semibold">Plano Premium</h3>
                 <div className="text-4xl font-bold flex items-center justify-center gap-2">
-                  R$ {plans.premium.price.toFixed(2)}
+                  R$ {PLANS.premium.price.toFixed(2)}
                 </div>
-                <p className="text-romantic-100 text-sm">
-                  Pagamento único • {plans.premium.duration}
+                <p className="text-sm">
+                  Pagamento único • {PLANS.premium.duration}
                 </p>
               </div>
 
               <div className="space-y-3 pt-4">
                 <div className="flex items-center gap-2">
                   <Check className="w-5 h-5" />
-                  <span>Tudo do plano básico</span>
+                  <span>Site personalizado</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-5 h-5" />
-                  <span>{plans.premium.maxPhotos} fotos do casal</span>
+                  <span>{PLANS.premium.maxPhotos} fotos do casal</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-5 h-5" />
-                  <span>Hospedagem vitalícia</span>
+                  <span>Link exclusivo</span>
                 </div>
                 <div className="flex items-center gap-2">
                   <Check className="w-5 h-5" />
-                  <span>Suporte prioritário</span>
+                  <span>QR Code para compartilhar</span>
                 </div>
               </div>
 
               <div className="pt-6">
-                <button className="w-full py-3 px-4 bg-white hover:bg-romantic-50 text-romantic-600 rounded-lg transition-colors">
+                <button className="w-full py-3 px-4 bg-white hover:bg-gray-100 text-romantic-800 rounded-lg transition-colors">
                   Criar Agora • Pague Depois
                 </button>
               </div>
