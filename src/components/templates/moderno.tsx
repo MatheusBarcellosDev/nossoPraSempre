@@ -1,0 +1,118 @@
+import { Heart, Sparkles } from 'lucide-react';
+import { TemplateProps } from '.';
+import { LoveCounter } from '@/components/ui/love-counter';
+import { BaseTemplate } from '.';
+
+export function TemplateModerno({
+  nome1,
+  nome2,
+  data,
+  mensagem,
+  fotos,
+  musica,
+}: TemplateProps) {
+  return (
+    <BaseTemplate musica={musica} variant="dark">
+      <div className="min-h-screen bg-gradient-to-br from-gray-950 via-romantic-950 to-gray-950 text-white p-4 overflow-auto">
+        {/* Elementos decorativos */}
+        <div className="fixed inset-0 overflow-hidden pointer-events-none">
+          <div className="absolute top-0 left-0 w-[800px] h-[800px] bg-romantic-500/5 rounded-full blur-3xl" />
+          <div className="absolute bottom-0 right-0 w-[800px] h-[800px] bg-romantic-500/5 rounded-full blur-3xl" />
+        </div>
+
+        <div className="max-w-5xl mx-auto space-y-24 py-12 relative">
+          {/* Header */}
+          <header className="text-center space-y-12">
+            <div className="relative inline-block">
+              <div className="absolute -top-8 left-1/2 -translate-x-1/2">
+                <Sparkles className="w-6 h-6 text-romantic-400/80" />
+              </div>
+              <h1 className="text-3xl sm:text-5xl md:text-6xl lg:text-7xl font-extralight tracking-widest px-4">
+                <span className="bg-gradient-to-r from-romantic-200 to-romantic-300 text-transparent bg-clip-text">
+                  {nome1}
+                </span>
+                <span className="inline-block mx-4 sm:mx-6 opacity-50">&</span>
+                <span className="bg-gradient-to-r from-romantic-300 to-romantic-200 text-transparent bg-clip-text">
+                  {nome2}
+                </span>
+              </h1>
+            </div>
+            <div className="bg-white/5 backdrop-blur-lg rounded-3xl p-6 sm:p-8 shadow-2xl border border-white/10 mx-4">
+              <LoveCounter startDate={data} className="text-romantic-200" />
+            </div>
+          </header>
+
+          {/* Galeria Principal */}
+          {fotos.length > 0 && (
+            <div className="grid grid-cols-1 md:grid-cols-2 gap-8 md:gap-12 px-4">
+              <div className="space-y-8 md:space-y-12">
+                {fotos
+                  .slice(0, Math.ceil(fotos.length / 2))
+                  .map((foto, index) => (
+                    <div
+                      key={index}
+                      className="group relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl"
+                    >
+                      <div className="absolute inset-0 bg-gradient-to-t from-romantic-950 to-transparent opacity-0 group-hover:opacity-80 transition-opacity duration-700" />
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={foto}
+                        alt={`Momento ${index + 1}`}
+                        className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                      />
+                      <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                        <Heart className="w-12 h-12 sm:w-16 sm:h-16 text-romantic-100" />
+                      </div>
+                    </div>
+                  ))}
+              </div>
+              <div className="space-y-8 md:space-y-12 md:mt-24">
+                {fotos.slice(Math.ceil(fotos.length / 2)).map((foto, index) => (
+                  <div
+                    key={index}
+                    className="group relative aspect-[4/5] rounded-3xl overflow-hidden shadow-2xl"
+                  >
+                    <div className="absolute inset-0 bg-gradient-to-t from-romantic-950 to-transparent opacity-0 group-hover:opacity-80 transition-opacity duration-700" />
+                    {/* eslint-disable-next-line @next/next/no-img-element */}
+                    <img
+                      src={foto}
+                      alt={`Momento ${index + 1}`}
+                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-1000"
+                    />
+                    <div className="absolute inset-0 flex items-center justify-center opacity-0 group-hover:opacity-100 transition-opacity duration-700">
+                      <Heart className="w-12 h-12 sm:w-16 sm:h-16 text-romantic-100" />
+                    </div>
+                  </div>
+                ))}
+              </div>
+            </div>
+          )}
+
+          {/* Mensagem */}
+          <div className="relative max-w-3xl mx-auto px-4">
+            <div className="absolute -top-12 left-1/2 -translate-x-1/2">
+              <Heart className="w-12 h-12 sm:w-16 sm:h-16 text-romantic-400/30" />
+            </div>
+            <div className="relative">
+              <div className="absolute inset-0 bg-gradient-to-br from-romantic-500/10 to-romantic-400/5 rounded-3xl blur-3xl" />
+              <div className="relative bg-white/5 backdrop-blur-lg rounded-3xl p-8 sm:p-12 md:p-16 shadow-2xl border border-white/10">
+                <p className="text-romantic-100 text-lg sm:text-xl md:text-2xl leading-relaxed whitespace-pre-wrap text-center font-extralight">
+                  {mensagem}
+                </p>
+              </div>
+            </div>
+          </div>
+
+          {/* Footer decorativo */}
+          <footer className="text-center pt-12">
+            <div className="flex items-center justify-center gap-6 text-romantic-500/30">
+              <div className="w-24 sm:w-32 h-px bg-gradient-to-r from-transparent via-romantic-500/20 to-transparent" />
+              <Sparkles className="w-5 h-5" />
+              <div className="w-24 sm:w-32 h-px bg-gradient-to-r from-transparent via-romantic-500/20 to-transparent" />
+            </div>
+          </footer>
+        </div>
+      </div>
+    </BaseTemplate>
+  );
+}

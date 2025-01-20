@@ -1,101 +1,123 @@
-import Image from "next/image";
+import { Heart, Sparkles, Timer } from 'lucide-react';
+import HeroSection from '@/components/HeroSection';
+import {
+  Card,
+  CardDescription,
+  CardHeader,
+  CardTitle,
+} from '@/components/ui/card';
+import { PlansSection } from '@/components/PlansSection';
 
 export default function Home() {
   return (
-    <div className="grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20 font-[family-name:var(--font-geist-sans)]">
-      <main className="flex flex-col gap-8 row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="list-inside list-decimal text-sm text-center sm:text-left font-[family-name:var(--font-geist-mono)]">
-          <li className="mb-2">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] px-1 py-0.5 rounded font-semibold">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li>Save and see your changes instantly.</li>
-        </ol>
+    <main className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-100 to-gray-200 p-8">
+      <HeroSection />
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:min-w-44"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+      {/* Como Funciona */}
+      <section className="max-w-6xl mx-auto mt-24 mb-32">
+        <h2 className="text-3xl font-semibold text-romantic-800 text-center mb-16">
+          Como Funciona
+        </h2>
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 px-4">
+          <Card className="group bg-white hover:bg-gradient-to-br hover:from-romantic-50 hover:to-romantic-100 shadow-lg hover:shadow-xl transition-all duration-500 border-romantic-100">
+            <CardHeader className="p-8 text-center space-y-4">
+              <div className="w-16 h-16 bg-romantic-100 rounded-2xl flex items-center justify-center mb-4 mx-auto transform group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
+                <span className="text-romantic-500 text-3xl font-bold">1</span>
+              </div>
+              <CardTitle className="text-2xl font-semibold text-romantic-800">
+                Personalize
+              </CardTitle>
+              <CardDescription className="text-base text-romantic-600">
+                Adicione suas fotos favoritas, escolha a música do casal e conte
+                sua história de amor
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="group bg-white hover:bg-gradient-to-br hover:from-romantic-50 hover:to-romantic-100 shadow-lg hover:shadow-xl transition-all duration-500 border-romantic-100">
+            <CardHeader className="p-8 text-center space-y-4">
+              <div className="w-16 h-16 bg-romantic-100 rounded-2xl flex items-center justify-center mb-4 mx-auto transform group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
+                <span className="text-romantic-500 text-3xl font-bold">2</span>
+              </div>
+              <CardTitle className="text-2xl font-semibold text-romantic-800">
+                Escolha seu Plano
+              </CardTitle>
+              <CardDescription className="text-base text-romantic-600">
+                Selecione o plano que melhor atende suas necessidades
+              </CardDescription>
+            </CardHeader>
+          </Card>
+
+          <Card className="group bg-white hover:bg-gradient-to-br hover:from-romantic-50 hover:to-romantic-100 shadow-lg hover:shadow-xl transition-all duration-500 border-romantic-100">
+            <CardHeader className="p-8 text-center space-y-4">
+              <div className="w-16 h-16 bg-romantic-100 rounded-2xl flex items-center justify-center mb-4 mx-auto transform group-hover:scale-110 group-hover:rotate-6 transition-transform duration-500">
+                <span className="text-romantic-500 text-3xl font-bold">3</span>
+              </div>
+              <CardTitle className="text-2xl font-semibold text-romantic-800">
+                Compartilhe
+              </CardTitle>
+              <CardDescription className="text-base text-romantic-600">
+                Receba seu QR Code exclusivo e compartilhe com quem você ama
+              </CardDescription>
+            </CardHeader>
+          </Card>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-6 flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+      </section>
+
+      {/* Recursos Especiais */}
+      <section className="bg-gradient-to-br from-romantic-50/80 to-romantic-100/80 py-24 -mx-8">
+        <div className="max-w-6xl mx-auto px-8">
+          <h2 className="text-3xl font-semibold text-romantic-800 text-center mb-16">
+            Recursos Especiais
+          </h2>
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-8">
+            <Card className="group bg-white/80 backdrop-blur hover:bg-white transition-all duration-300 border-romantic-200">
+              <CardHeader className="p-8 text-center">
+                <div className="w-16 h-16 mx-auto mb-6 bg-romantic-100 rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500">
+                  <Timer className="w-8 h-8 text-romantic-500" />
+                </div>
+                <CardTitle className="text-xl font-semibold text-romantic-700 mb-3">
+                  Contador de Amor
+                </CardTitle>
+                <CardDescription className="text-romantic-600">
+                  Veja quanto tempo vocês estão juntos, até o último segundo
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="group bg-white/80 backdrop-blur hover:bg-white transition-all duration-300 border-romantic-200">
+              <CardHeader className="p-8 text-center">
+                <div className="w-16 h-16 mx-auto mb-6 bg-romantic-100 rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500">
+                  <Heart className="w-8 h-8 text-romantic-500" />
+                </div>
+                <CardTitle className="text-xl font-semibold text-romantic-700 mb-3">
+                  Galeria de Momentos
+                </CardTitle>
+                <CardDescription className="text-romantic-600">
+                  Compartilhe suas fotos mais especiais em uma linda galeria
+                </CardDescription>
+              </CardHeader>
+            </Card>
+
+            <Card className="group bg-white/80 backdrop-blur hover:bg-white transition-all duration-300 border-romantic-200">
+              <CardHeader className="p-8 text-center">
+                <div className="w-16 h-16 mx-auto mb-6 bg-romantic-100 rounded-2xl flex items-center justify-center transform group-hover:scale-110 transition-transform duration-500">
+                  <Sparkles className="w-8 h-8 text-romantic-500" />
+                </div>
+                <CardTitle className="text-xl font-semibold text-romantic-700 mb-3">
+                  Música do Casal
+                </CardTitle>
+                <CardDescription className="text-romantic-600">
+                  Adicione aquela música que marca a história de vocês
+                </CardDescription>
+              </CardHeader>
+            </Card>
+          </div>
+        </div>
+      </section>
+
+      {/* Planos */}
+      <PlansSection />
+    </main>
   );
 }

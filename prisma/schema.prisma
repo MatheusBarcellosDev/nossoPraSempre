@@ -1,0 +1,27 @@
+// This is your Prisma schema file,
+// learn more about it in the docs: https://pris.ly/d/prisma-schema
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+model Page {
+  id        String   @id @default(cuid())
+  nome1     String
+  nome2     String
+  data      String
+  mensagem  String
+  template  String
+  musica    String?
+  fotos     String[]
+  slug      String   @unique
+  plano     String
+  isPago    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+}
