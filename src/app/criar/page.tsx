@@ -41,7 +41,7 @@ function CreateContent() {
   const handleImageUpload = async (urls: string[]) => {
     if (!plan) return;
 
-    if (formData.fotos.length >= plan.maxPhotos) {
+    if (urls.length > plan.maxPhotos) {
       toast.error(
         `O plano ${
           plan.type === 'basic' ? 'Básico' : 'Premium'
@@ -52,7 +52,7 @@ function CreateContent() {
 
     setFormData((prev) => ({
       ...prev,
-      fotos: [...prev.fotos, ...urls],
+      fotos: urls,
     }));
   };
 
@@ -219,8 +219,8 @@ function CreateContent() {
 
                 <ImageUpload
                   onUpload={handleImageUpload}
-                  maxFiles={plan.maxPhotos - formData.fotos.length}
-                  disabled={formData.fotos.length >= plan.maxPhotos}
+                  maxFiles={plan.maxPhotos}
+                  value={formData.fotos}
                 />
               </CardContent>
             </Card>
