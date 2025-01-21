@@ -10,41 +10,94 @@ function ReturnContent() {
   const searchParams = useSearchParams();
   const [isLoading, setIsLoading] = useState(true);
   const [isSuccess, setIsSuccess] = useState(false);
+  const [error, setError] = useState<string | null>(null);
 
   useEffect(() => {
-    const sessionId = searchParams.get('session_id');
-    if (!sessionId) {
-      router.push('/');
-      return;
-    }
-
-    const checkStatus = async () => {
+    const processPayment = async () => {
       try {
-        const response = await fetch(
-          `/api/checkout-session?session_id=${sessionId}`
-        );
+        const sessionId = searchParams.get('session_id');
+        const tempSlug = searchParams.get('temp_slug');
+
+        if (!sessionId || !tempSlug) {
+          setError('Dados da sessão não encontrados');
+          return;
+        }
+
+        // Recuperar dados temporários do localStorage
+        const tempData = localStorage.getItem('tempPageData');
+        if (!tempData) {
+          setError('Dados temporários não encontrados');
+          return;
+        }
+
+        // Processar o pagamento e os dados finais
+        const response = await fetch('/api/process-payment', {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+          },
+          body: JSON.stringify({
+            tempSlug,
+            sessionId,
+            tempData: JSON.parse(tempData), // Enviar os dados no corpo da requisição
+          }),
+        });
+
+        if (!response.ok) {
+          const errorData = await response.json();
+          throw new Error(errorData.error || 'Erro ao processar o pagamento');
+        }
+
         const data = await response.json();
 
-        if (data.status === 'complete') {
-          setIsSuccess(true);
-          toast.success('Pagamento realizado com sucesso!');
-        }
-      } catch {
-        toast.error('Erro ao verificar status do pagamento');
+        // Limpar dados temporários
+        localStorage.removeItem('tempPageData');
+
+        setIsSuccess(true);
+
+        // Redirecionar para a página de sucesso após 3 segundos
+        setTimeout(() => {
+          router.push(`/success?slug=${data.slug}`);
+        }, 3000);
+      } catch (error) {
+        console.error('Error:', error);
+        setError(
+          error instanceof Error
+            ? error.message
+            : 'Erro ao processar o pagamento'
+        );
       } finally {
         setIsLoading(false);
       }
     };
 
-    checkStatus();
+    processPayment();
   }, [searchParams, router]);
 
   if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
-          <div className="w-16 h-16 border-4 border-romantic-200 border-t-romantic-500 rounded-full animate-spin mx-auto" />
-          <p className="text-romantic-600">Verificando pagamento...</p>
+          <h1 className="text-2xl font-semibold text-romantic-800">
+            Processando pagamento
+          </h1>
+          <p className="text-romantic-600">
+            Aguarde enquanto finalizamos seu pedido...
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center space-y-4">
+          <h1 className="text-2xl font-semibold text-romantic-800">
+            Erro no processamento
+          </h1>
+          <p className="text-romantic-600">{error}</p>
+          <Button onClick={() => router.push('/')}>Voltar para o início</Button>
         </div>
       </div>
     );
@@ -53,26 +106,12 @@ function ReturnContent() {
   return (
     <div className="min-h-screen flex items-center justify-center">
       <div className="text-center space-y-6">
-        {isSuccess ? (
-          <>
-            <h1 className="text-2xl font-semibold text-romantic-800">
-              Pagamento confirmado!
-            </h1>
-            <p className="text-romantic-600">
-              Sua página está pronta para ser compartilhada.
-            </p>
-          </>
-        ) : (
-          <>
-            <h1 className="text-2xl font-semibold text-romantic-800">
-              Aguardando confirmação
-            </h1>
-            <p className="text-romantic-600">
-              O pagamento está sendo processado.
-            </p>
-          </>
-        )}
-        <Button onClick={() => router.back()}>Voltar para minha página</Button>
+        <h1 className="text-2xl font-semibold text-romantic-800">
+          Pagamento confirmado!
+        </h1>
+        <p className="text-romantic-600">
+          Sua página está sendo criada e você será redirecionado em instantes.
+        </p>
       </div>
     </div>
   );

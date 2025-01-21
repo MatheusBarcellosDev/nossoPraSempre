@@ -79,43 +79,26 @@ function CreateContent() {
 
     try {
       setIsSubmitting(true);
-      console.log('Enviando dados para a API...');
 
-      const response = await fetch('/api/pages', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          nome1: formData.nome1,
-          nome2: formData.nome2,
-          data: formData.data,
-          mensagem: formData.mensagem,
-          template: formData.template,
-          musica: formData.musica,
-          fotos: formData.fotos,
-          plano: plan.type,
-        }),
-      });
+      // Armazenar dados temporariamente no localStorage
+      const tempData = {
+        ...formData,
+        plano: plan.type,
+        timestamp: Date.now(), // Para controle de expiração
+      };
 
-      console.log('Resposta da API:', response.status);
+      localStorage.setItem('tempPageData', JSON.stringify(tempData));
 
-      if (!response.ok) {
-        const error = await response.json();
-        console.error('API Error:', error);
-        throw new Error(error.error || 'Erro ao criar a página');
-      }
+      // Gerar um slug temporário
+      const tempSlug = `temp-${Date.now()}`;
 
-      const data = await response.json();
-      console.log('Dados retornados:', data);
+      toast.success('Dados salvos temporariamente!');
 
-      toast.success('Página criada com sucesso!');
-
-      // Redireciona para a página de finalização com o slug
-      router.push(`/criar/finalizar?slug=${data.slug}`);
+      // Redireciona para a página de finalização com o slug temporário
+      router.push(`/criar/finalizar?slug=${tempSlug}`);
     } catch (error) {
       console.error('Error:', error);
-      toast.error('Erro ao criar a página. Por favor, tente novamente.');
+      toast.error('Erro ao salvar os dados. Por favor, tente novamente.');
     } finally {
       setIsSubmitting(false);
     }

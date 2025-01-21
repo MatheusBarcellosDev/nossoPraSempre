@@ -19,6 +19,28 @@ export function ImageUpload({
     onUpload(value.filter((url) => url !== urlToRemove));
   };
 
+  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const files = e.target.files;
+    if (!files) return;
+
+    const remainingSlots = maxFiles - value.length;
+    const filesToProcess = Array.from(files).slice(0, remainingSlots);
+
+    Promise.all(
+      filesToProcess.map((file) => {
+        return new Promise<string>((resolve) => {
+          const reader = new FileReader();
+          reader.onloadend = () => {
+            resolve(reader.result as string);
+          };
+          reader.readAsDataURL(file);
+        });
+      })
+    ).then((base64urls) => {
+      onUpload([...value, ...base64urls]);
+    });
+  };
+
   return (
     <div className="space-y-4">
       <div className="grid grid-cols-2 md:grid-cols-3 gap-4">
@@ -42,75 +64,29 @@ export function ImageUpload({
           </div>
         ))}
         {value.length < maxFiles && (
-          <CldUploadWidget
-            uploadPreset="casal-web"
-            options={{
-              maxFiles: maxFiles - value.length,
-              clientAllowedFormats: ['image'],
-              maxFileSize: 2000000,
-              sources: ['local', 'url', 'camera'],
-              styles: {
-                palette: {
-                  window: '#FFFFFF',
-                  windowBorder: '#FDF2F8',
-                  tabIcon: '#DB2777',
-                  menuIcons: '#DB2777',
-                  textDark: '#000000',
-                  textLight: '#FFFFFF',
-                  link: '#DB2777',
-                  action: '#DB2777',
-                  inactiveTabIcon: '#E5E7EB',
-                  error: '#EF4444',
-                  inProgress: '#DB2777',
-                  complete: '#10B981',
-                  sourceBg: '#FFFFFF',
-                },
-                fonts: {
-                  default: null,
-                  "'Inter', sans-serif": {
-                    url: 'https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600&display=swap',
-                    active: true,
-                  },
-                },
-              },
-              text: {
-                'pt-BR': {
-                  local: {
-                    browse: 'Procurar',
-                    dd_title_single: 'Arraste e solte sua foto aqui',
-                    dd_title_multi: 'Arraste e solte suas fotos aqui',
-                    drop_title_single: 'Solte sua foto aqui',
-                    drop_title_multi: 'Solte suas fotos aqui',
-                  },
-                },
-              },
-              language: 'pt-BR',
-            }}
-            onSuccess={(result: any) => {
-              if (result?.info?.secure_url) {
-                onUpload([...value, result.info.secure_url]);
-              }
-            }}
-          >
-            {({ open }) => (
-              <button
-                type="button"
-                onClick={() => open()}
-                className="relative aspect-square rounded-lg border-2 border-dashed border-romantic-200 hover:border-romantic-300 transition-colors flex flex-col items-center justify-center gap-2 bg-romantic-50/50 hover:bg-romantic-50 text-romantic-600 hover:text-romantic-700"
-              >
-                <Upload className="w-6 h-6" />
-                <div className="text-sm text-center">
-                  <p className="font-medium">Carregar foto</p>
-                  <p className="text-xs text-romantic-500">
-                    {maxFiles - value.length}{' '}
-                    {maxFiles - value.length === 1
-                      ? 'foto restante'
-                      : 'fotos restantes'}
-                  </p>
-                </div>
-              </button>
-            )}
-          </CldUploadWidget>
+          <label className="relative aspect-square rounded-lg border-2 border-dashed border-romantic-200 hover:border-romantic-300 transition-colors flex flex-col items-center justify-center gap-2 bg-romantic-50/50 hover:bg-romantic-50 text-romantic-600 hover:text-romantic-700 cursor-pointer">
+            <input
+              type="file"
+              accept="image/*"
+              multiple
+              className="hidden"
+              onChange={handleFileChange}
+              onClick={(e) => {
+                // Reset value to allow selecting the same file again
+                (e.target as HTMLInputElement).value = '';
+              }}
+            />
+            <Upload className="w-6 h-6" />
+            <div className="text-sm text-center">
+              <p className="font-medium">Carregar foto</p>
+              <p className="text-xs text-romantic-500">
+                {maxFiles - value.length}{' '}
+                {maxFiles - value.length === 1
+                  ? 'foto restante'
+                  : 'fotos restantes'}
+              </p>
+            </div>
+          </label>
         )}
       </div>
       {value.length === 0 && (

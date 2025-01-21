@@ -12,7 +12,7 @@ export const PLANS: Record<PlanType, PlanInfo> = {
     type: 'basic',
     maxPhotos: 3,
     duration: '1 ano',
-    price: 19.9,
+    price: 1.0,
   },
   premium: {
     type: 'premium',

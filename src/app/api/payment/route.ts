@@ -8,7 +8,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!, {
 
 const plans = {
   basic: {
-    price: 1990, // R$ 19,90
+    price: 100, // R$ 1,00
     name: 'Plano Básico',
   },
   premium: {
@@ -48,12 +48,20 @@ export async function GET(request: Request) {
       return NextResponse.json({ error: 'Page not found' }, { status: 404 });
     }
 
-    // Se o pagamento foi bem-sucedido, atualizar o status no banco
+    // Se o pagamento foi bem-sucedido, processar os dados finais
     if (session.payment_status === 'paid' && !page.isPago) {
+      // Atualizar o status de pagamento
       await prisma.page.update({
         where: { slug },
-        data: { isPago: true },
+        data: {
+          isPago: true,
+          // Aqui você pode adicionar outros campos que precisam ser atualizados
+          // como as URLs das imagens do Cloudinary, etc.
+        },
       });
+
+      // Aqui você pode adicionar a lógica para processar as imagens no Cloudinary
+      // e atualizar as URLs no banco de dados
     }
 
     return NextResponse.json({
@@ -73,11 +81,20 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { slug, plano } = body;
+    const { slug, plano, tempData } = body;
 
-    if (!slug || !plano) {
+    console.log('Payment request body:', { slug, plano, hasData: !!tempData });
+
+    if (!slug || !plano || !tempData) {
       return NextResponse.json(
-        { error: 'Missing required fields' },
+        {
+          error: 'Campos obrigatórios faltando',
+          details: {
+            slug: !!slug,
+            plano: !!plano,
+            tempData: !!tempData,
+          },
+        },
         { status: 400 }
       );
     }
@@ -85,11 +102,21 @@ export async function POST(request: Request) {
     const selectedPlan = plans[plano as keyof typeof plans];
     if (!selectedPlan) {
       return NextResponse.json(
-        { error: 'Invalid plan selected' },
+        { error: 'Plano inválido selecionado', plano },
         { status: 400 }
       );
     }
 
+    // Extrair apenas os dados essenciais para os metadados do Stripe
+    const parsedTempData = JSON.parse(tempData);
+    const essentialData = {
+      nome1: parsedTempData.nome1,
+      nome2: parsedTempData.nome2,
+      plano: parsedTempData.plano,
+      template: parsedTempData.template,
+    };
+
+    // Criar a sessão do Stripe
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -98,7 +125,7 @@ export async function POST(request: Request) {
             currency: 'brl',
             product_data: {
               name: selectedPlan.name,
-              description: 'Página personalizada para seu amor',
+              description: `Página personalizada para ${essentialData.nome1} e ${essentialData.nome2}`,
             },
             unit_amount: selectedPlan.price,
           },
@@ -106,11 +133,25 @@ export async function POST(request: Request) {
         },
       ],
       mode: 'payment',
-      success_url: `${process.env.NEXT_PUBLIC_URL}/return?session_id={CHECKOUT_SESSION_ID}`,
+      success_url: `${process.env.NEXT_PUBLIC_URL}/return?session_id={CHECKOUT_SESSION_ID}&temp_slug=${slug}`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/criar/finalizar?slug=${slug}`,
       metadata: {
         slug,
         plano,
+        tempDataKey: slug, // Usamos o slug como chave para recuperar os dados completos depois
+      },
+    });
+
+    if (!session?.url) {
+      throw new Error('Não foi possível criar a URL de pagamento');
+    }
+
+    // Salvar os dados temporários completos com o slug como chave
+    await prisma.tempData.create({
+      data: {
+        key: slug,
+        data: tempData,
+        expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutos
       },
     });
 
@@ -118,7 +159,13 @@ export async function POST(request: Request) {
   } catch (error) {
     console.error('Payment error:', error);
     return NextResponse.json(
-      { error: 'Error creating checkout session' },
+      {
+        error:
+          error instanceof Error
+            ? error.message
+            : 'Erro ao criar sessão de pagamento',
+        details: error,
+      },
       { status: 500 }
     );
   }

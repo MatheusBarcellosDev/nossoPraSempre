@@ -42,6 +42,7 @@ interface PageData {
 function FinalizarContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [pageData, setPageData] = useState<PageData | null>(null);
+  const [timeLeft, setTimeLeft] = useState<number>(30 * 60); // 30 minutos em segundos
   const router = useRouter();
   const searchParams = useSearchParams();
   const slug = searchParams.get('slug');
@@ -52,48 +53,121 @@ function FinalizarContent() {
       return;
     }
 
-    const fetchPageData = async () => {
-      try {
-        const response = await fetch(`/api/pages/${slug}`);
-        if (!response.ok) {
-          throw new Error('Página não encontrada');
-        }
-        const data = await response.json();
-        setPageData(data);
-      } catch {
-        toast.error('Erro ao carregar a página');
+    // Se for um slug temporário, recuperar dados do localStorage
+    if (slug.startsWith('temp-')) {
+      const tempData = localStorage.getItem('tempPageData');
+      if (!tempData) {
+        toast.error('Dados temporários não encontrados');
         router.push('/');
-      } finally {
-        setIsLoading(false);
+        return;
       }
-    };
 
-    fetchPageData();
+      const data = JSON.parse(tempData);
+      // Verificar se os dados temporários expiraram (30 minutos)
+      if (Date.now() - data.timestamp > 30 * 60 * 1000) {
+        localStorage.removeItem('tempPageData');
+        toast.error('Tempo de preview expirado');
+        router.push('/');
+        return;
+      }
+
+      setPageData(data);
+      setIsLoading(false);
+    } else {
+      // Caso contrário, buscar do banco de dados
+      const fetchPageData = async () => {
+        try {
+          const response = await fetch(`/api/pages/${slug}`);
+          if (!response.ok) {
+            throw new Error('Página não encontrada');
+          }
+          const data = await response.json();
+          setPageData(data);
+        } catch {
+          toast.error('Erro ao carregar a página');
+          router.push('/');
+        } finally {
+          setIsLoading(false);
+        }
+      };
+
+      fetchPageData();
+    }
   }, [slug, router]);
+
+  // Timer para expiração
+  useEffect(() => {
+    if (!pageData?.isPago && timeLeft > 0) {
+      const timer = setInterval(() => {
+        setTimeLeft((prev) => {
+          if (prev <= 1) {
+            clearInterval(timer);
+            localStorage.removeItem('tempPageData');
+            router.push('/');
+            return 0;
+          }
+          return prev - 1;
+        });
+      }, 1000);
+
+      return () => clearInterval(timer);
+    }
+  }, [pageData?.isPago, timeLeft, router]);
+
+  const formatTime = (seconds: number) => {
+    const minutes = Math.floor(seconds / 60);
+    const remainingSeconds = seconds % 60;
+    return `${minutes}:${remainingSeconds.toString().padStart(2, '0')}`;
+  };
 
   const handlePayment = async () => {
     if (!pageData) return;
 
     try {
+      const tempData = localStorage.getItem('tempPageData');
+      if (!tempData) {
+        toast.error('Dados temporários não encontrados');
+        return;
+      }
+
+      const parsedTempData = JSON.parse(tempData);
+      const tempSlug = `temp-${Date.now()}`; // Gerar um slug temporário único
+
+      console.log('Dados do pagamento:', {
+        tempSlug,
+        plano: parsedTempData.plano,
+        tempData,
+      });
+
       const response = await fetch('/api/payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          slug: pageData.slug,
-          plano: pageData.plano,
+          slug: tempSlug,
+          plano: parsedTempData.plano,
+          tempData,
         }),
       });
 
       if (!response.ok) {
-        throw new Error('Erro ao criar sessão de pagamento');
+        const error = await response.json();
+        console.error('Payment error details:', error);
+        throw new Error(error.error || 'Erro ao criar sessão de pagamento');
       }
 
       const { url } = await response.json();
-      window.location.href = url;
-    } catch {
-      toast.error('Erro ao processar pagamento');
+      if (url) {
+        window.location.href = url;
+      } else {
+        throw new Error('URL de pagamento não encontrada');
+      }
+    } catch (error) {
+      console.error('Payment error:', error);
+      toast.error(
+        error instanceof Error ? error.message : 'Erro ao processar pagamento'
+      );
     }
   };
 
@@ -306,6 +380,14 @@ function FinalizarContent() {
           )}
         </Card>
       </div>
+
+      {!pageData?.isPago && (
+        <div className="fixed top-0 left-0 right-0 bg-romantic-500 text-white py-2 text-center">
+          <p className="text-sm">
+            Tempo restante para finalizar: {formatTime(timeLeft)}
+          </p>
+        </div>
+      )}
     </div>
   );
 }
