@@ -1,10 +1,11 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
+import { cleanupTempImages } from '@/lib/cleanupStorage';
+import { supabase } from '@/lib/supabase';
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { tempData, slug } = body;
+    const { tempData, slug } = await request.json();
 
     console.log('=== TempData POST ===');
     console.log('1. Saving data:', {
@@ -21,14 +22,9 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log('2. Data saved successfully:', {
-      key: savedTempData.key,
-      expiresAt: savedTempData.expiresAt,
-    });
-
     return NextResponse.json({ success: true, key: savedTempData.key });
   } catch (error) {
-    console.error('3. Error saving temp data:', error);
+    console.error('Error saving temp data:', error);
     return NextResponse.json(
       { error: 'Error saving temporary data' },
       { status: 500 }
@@ -70,6 +66,36 @@ export async function GET(request: Request) {
     console.error('Error fetching temp data:', error);
     return NextResponse.json(
       { error: 'Error fetching temporary data' },
+      { status: 500 }
+    );
+  }
+}
+
+export async function DELETE(request: Request) {
+  try {
+    const { key } = await request.json();
+
+    // Limpar imagens temporárias
+    const { data: files } = await supabase.storage
+      .from('wedding-photos')
+      .list(`temp/${key}`);
+
+    if (files && files.length > 0) {
+      await supabase.storage
+        .from('wedding-photos')
+        .remove(files.map((file) => `temp/${key}/${file.name}`));
+    }
+
+    // Limpar dados temporários do banco
+    await prisma.tempData.delete({
+      where: { key },
+    });
+
+    return NextResponse.json({ success: true });
+  } catch (error) {
+    console.error('Erro ao limpar dados:', error);
+    return NextResponse.json(
+      { error: 'Erro ao limpar dados' },
       { status: 500 }
     );
   }

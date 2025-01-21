@@ -74,21 +74,18 @@ function FinalizarContent() {
 
   // Timer para expiração
   useEffect(() => {
-    if (!pageData?.isPago && timeLeft > 0) {
-      const timer = setInterval(() => {
-        setTimeLeft((prev) => {
-          if (prev <= 1) {
-            clearInterval(timer);
-            router.push('/');
-            return 0;
-          }
-          return prev - 1;
-        });
-      }, 1000);
+    const timer = setInterval(() => {
+      setTimeLeft((prev) => {
+        if (prev <= 0) {
+          router.push('/');
+          return 0;
+        }
+        return prev - 1;
+      });
+    }, 1000);
 
-      return () => clearInterval(timer);
-    }
-  }, [pageData?.isPago, timeLeft, router]);
+    return () => clearInterval(timer);
+  }, [router]);
 
   const formatTime = (seconds: number) => {
     const minutes = Math.floor(seconds / 60);

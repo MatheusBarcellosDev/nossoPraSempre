@@ -1,6 +1,6 @@
 'use client';
 
-import { createContext, useContext, useState } from 'react';
+import { createContext, useContext, useState, useEffect } from 'react';
 import { PlanType, PlanInfo, PLANS } from '@/constants/plans';
 
 interface PlanContextType {
@@ -14,6 +14,13 @@ export { PLANS, type PlanType };
 
 export function PlanProvider({ children }: { children: React.ReactNode }) {
   const [plan, setPlan] = useState<PlanInfo | null>(null);
+
+  useEffect(() => {
+    const storedPlan = localStorage.getItem('selectedPlan');
+    if (storedPlan) {
+      setPlan(JSON.parse(storedPlan));
+    }
+  }, []);
 
   return (
     <PlanContext.Provider value={{ plan, setPlan }}>

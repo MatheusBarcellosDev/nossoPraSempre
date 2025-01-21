@@ -1,16 +1,12 @@
 import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
-import { v2 as cloudinary } from 'cloudinary';
 import { sendSuccessEmail } from '@/lib/email';
+import { supabase } from '@/lib/supabase';
+import path from 'path';
+import slugify from 'slugify';
+import Stripe from 'stripe';
 
-// Configurar o Cloudinary com as credenciais corretas
-cloudinary.config({
-  cloud_name: process.env.NEXT_PUBLIC_CLOUDINARY_CLOUD_NAME || 'dxgqvvnxz',
-  api_key: process.env.CLOUDINARY_API_KEY || '117616959891498',
-  api_secret:
-    process.env.CLOUDINARY_API_SECRET || 'ZdW8FniJ9R9EnQxC87pE4DrqQZw',
-  secure: true,
-});
+const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 export async function POST(request: Request) {
   try {
@@ -36,7 +32,6 @@ export async function POST(request: Request) {
     }
 
     // Verificar o status do pagamento
-    const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
     console.log('3. Stripe session status:', {
@@ -53,58 +48,10 @@ export async function POST(request: Request) {
 
     console.log('Iniciando upload das imagens...');
 
-    // Upload das imagens base64 para o Cloudinary
-    const uploadedImages = await Promise.all(
-      tempData.fotos.map(async (foto: string, index: number) => {
-        try {
-          console.log(`Processando imagem ${index + 1}...`);
-
-          // Verificar se a foto já é uma URL do Cloudinary
-          if (foto.startsWith('https://res.cloudinary.com')) {
-            console.log(`Imagem ${index + 1} já é uma URL do Cloudinary`);
-            return foto;
-          }
-
-          // Upload da imagem base64
-          const result = await new Promise((resolve, reject) => {
-            cloudinary.uploader.upload(
-              foto,
-              {
-                folder: 'casal-web',
-                upload_preset: 'casal-web',
-                resource_type: 'image',
-                timeout: 120000, // 2 minutos de timeout
-              },
-              (error, result) => {
-                if (error) {
-                  console.error(
-                    `Erro no upload da imagem ${index + 1}:`,
-                    error
-                  );
-                  reject(error);
-                } else {
-                  console.log(
-                    `Imagem ${index + 1} enviada com sucesso:`,
-                    result
-                  );
-                  resolve(result);
-                }
-              }
-            );
-          });
-
-          return (result as any).secure_url;
-        } catch (error) {
-          console.error(`Erro ao processar imagem ${index + 1}:`, error);
-          throw error;
-        }
-      })
-    );
-
-    console.log('Upload de imagens concluído');
+    // Usar as URLs que já estão no Supabase
+    const uploadedImages = tempData.fotos;
 
     // Criar slug final baseado nos nomes
-    const slugify = require('slugify');
     const baseSlug = slugify(`${tempData.nome1}-e-${tempData.nome2}`, {
       lower: true,
       strict: true,
@@ -113,34 +60,53 @@ export async function POST(request: Request) {
     // Verificar se o slug já existe
     let finalSlug = baseSlug;
     let counter = 1;
-    let existingPage = await prisma.page.findUnique({
-      where: { slug: finalSlug },
-    });
 
-    while (existingPage) {
-      finalSlug = `${baseSlug}-${counter}`;
-      existingPage = await prisma.page.findUnique({
+    await prisma.$transaction(async (tx) => {
+      // Verificar se já existe
+      const existingPage = await tx.page.findUnique({
         where: { slug: finalSlug },
       });
-      counter++;
-    }
 
-    console.log('Salvando dados no banco...');
+      if (!existingPage) {
+        // Após confirmação do pagamento
+        const finalImages = await Promise.all(
+          uploadedImages.map(async (url: string) => {
+            // Se a imagem já está no bucket temporário, mover para pasta final
+            if (url.includes('wedding-photos')) {
+              const oldPath = url.split('wedding-photos/')[1];
+              const newPath = `final/${tempData.nome1}-${
+                tempData.nome2
+              }/${path.basename(oldPath)}`;
 
-    // Salvar os dados finais no banco
-    const page = await prisma.page.create({
-      data: {
-        nome1: tempData.nome1,
-        nome2: tempData.nome2,
-        data: tempData.data,
-        mensagem: tempData.mensagem,
-        template: tempData.template,
-        musica: tempData.musica,
-        fotos: uploadedImages,
-        slug: finalSlug,
-        plano: tempData.plano,
-        isPago: true,
-      },
+              await supabase.storage
+                .from('wedding-photos')
+                .move(oldPath, newPath);
+
+              return supabase.storage
+                .from('wedding-photos')
+                .getPublicUrl(newPath).data.publicUrl;
+            }
+
+            return url;
+          })
+        );
+
+        // Salvar página com as novas URLs
+        await tx.page.create({
+          data: {
+            nome1: tempData.nome1,
+            nome2: tempData.nome2,
+            data: tempData.data,
+            mensagem: tempData.mensagem,
+            template: tempData.template,
+            musica: tempData.musica,
+            fotos: finalImages,
+            slug: finalSlug,
+            plano: tempData.plano,
+            isPago: true,
+          },
+        });
+      }
     });
 
     console.log('Processamento concluído com sucesso');
@@ -150,14 +116,14 @@ export async function POST(request: Request) {
       await sendSuccessEmail({
         nome1: tempData.nome1,
         nome2: tempData.nome2,
-        slug: page.slug,
+        slug: finalSlug,
         email: session.customer_details.email,
       });
     }
 
     return NextResponse.json({
       success: true,
-      slug: page.slug,
+      slug: finalSlug,
     });
   } catch (error) {
     console.error('Processing error:', error);

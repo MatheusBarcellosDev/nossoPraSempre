@@ -5,7 +5,6 @@ import slugify from 'slugify';
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    console.log('Received body:', body);
 
     const { nome1, nome2, data, mensagem, fotos, musica, template, plano } =
       body;
@@ -74,7 +73,6 @@ export async function POST(request: Request) {
       },
     });
 
-    console.log('Page created successfully:', page.slug);
     return NextResponse.json({ slug: page.slug });
   } catch (error) {
     console.error('Error creating page:', error);

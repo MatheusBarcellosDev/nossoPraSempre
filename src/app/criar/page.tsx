@@ -12,12 +12,15 @@ import { TemplateType, templates } from '@/components/templates';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePlan, PlanType, PLANS } from '@/contexts/PlanContext';
 import { toast } from 'sonner';
+import { optimizeImage } from '@/lib/imageOptimizer';
+import { supabase } from '@/lib/supabase';
 
 function CreateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
   const { plan, setPlan } = usePlan();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [sessionId] = useState(() => crypto.randomUUID());
 
   useEffect(() => {
     const planType = searchParams.get('plan') as PlanType;
@@ -41,49 +44,57 @@ function CreateContent() {
   const handleImageUpload = async (urls: string[]) => {
     if (!plan) return;
 
-    if (urls.length > plan.maxPhotos) {
-      toast.error(
-        `O plano ${
-          plan.type === 'basic' ? 'Básico' : 'Premium'
-        } permite apenas ${plan.maxPhotos} fotos.`
-      );
-      return;
-    }
+    try {
+      console.log('1. Salvando imagens no estado');
 
-    setFormData((prev) => ({
-      ...prev,
-      fotos: urls,
-    }));
+      // Apenas salvar as URLs base64 no estado
+      setFormData((prev) => ({
+        ...prev,
+        fotos: urls, // Salvar as URLs base64 diretamente
+      }));
+    } catch (error) {
+      console.error('Erro ao salvar imagens:', error);
+      toast.error('Erro ao processar as imagens');
+    }
   };
 
   const handleSubmit = async () => {
     if (!plan) return;
 
-    console.log('Iniciando submissão do formulário...');
-    console.log('Dados do formulário:', formData);
-    console.log('Plano selecionado:', plan);
-
-    // Validações básicas
-    if (!formData.nome1.trim() || !formData.nome2.trim()) {
-      toast.error('Por favor, preencha os nomes do casal.');
-      return;
-    }
-    if (!formData.data) {
-      toast.error('Por favor, selecione a data.');
-      return;
-    }
-    if (!formData.mensagem.trim()) {
-      toast.error('Por favor, escreva uma mensagem.');
-      return;
-    }
-
     try {
       setIsSubmitting(true);
+      console.log('1. Iniciando upload das imagens');
+
+      const optimizedUrls = await Promise.all(
+        formData.fotos.map(async (base64Image, index) => {
+          const response = await fetch('/api/optimize-image', {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              image: base64Image,
+              folder: `temp/${Date.now()}`,
+            }),
+          });
+
+          const data = await response.json();
+
+          if (!response.ok) {
+            console.error(`Erro detalhado da imagem ${index + 1}:`, data);
+            throw new Error(
+              data.details || `Erro ao processar imagem ${index + 1}`
+            );
+          }
+
+          return data.url;
+        })
+      );
 
       // Gerar um slug temporário
       const tempSlug = `temp-${Date.now()}`;
 
-      // Salvar no TempData usando a nova rota
+      // Salvar dados temporários
       const response = await fetch('/api/temp-data', {
         method: 'POST',
         headers: {
@@ -92,21 +103,22 @@ function CreateContent() {
         body: JSON.stringify({
           tempData: {
             ...formData,
+            fotos: optimizedUrls,
             plano: plan.type,
-            timestamp: Date.now(),
           },
           slug: tempSlug,
         }),
       });
 
+      const responseData = await response.json();
+
       if (!response.ok) {
-        const error = await response.json();
-        throw new Error(error.error || 'Erro ao salvar dados temporários');
+        throw new Error(
+          responseData.error || 'Erro ao salvar dados temporários'
+        );
       }
 
       toast.success('Dados salvos temporariamente!');
-
-      // Redireciona para a página de finalização com o slug temporário
       router.push(`/criar/finalizar?slug=${tempSlug}`);
     } catch (error) {
       console.error('Error:', error);
