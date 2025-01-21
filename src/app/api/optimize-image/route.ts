@@ -3,6 +3,12 @@ import sharp from 'sharp';
 import { supabase } from '@/lib/supabase';
 
 export async function POST(request: Request) {
+  console.log('Environment check:', {
+    hasUrl: !!process.env.NEXT_PUBLIC_SUPABASE_URL,
+    hasKey: !!process.env.SUPABASE_SERVICE_ROLE_KEY,
+    url: process.env.NEXT_PUBLIC_SUPABASE_URL?.substring(0, 10) + '...',
+  });
+
   try {
     if (
       !process.env.NEXT_PUBLIC_SUPABASE_URL ||
