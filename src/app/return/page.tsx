@@ -18,19 +18,36 @@ function ReturnContent() {
         const sessionId = searchParams.get('session_id');
         const tempSlug = searchParams.get('temp_slug');
 
+        console.log('=== Return Page ===');
+        console.log('1. Processing payment with:', {
+          sessionId,
+          tempSlug,
+        });
+
         if (!sessionId || !tempSlug) {
+          console.error('2. Missing required params:', { sessionId, tempSlug });
           setError('Dados da sessão não encontrados');
           return;
         }
 
-        // Recuperar dados temporários do localStorage
-        const tempData = localStorage.getItem('tempPageData');
-        if (!tempData) {
-          setError('Dados temporários não encontrados');
-          return;
+        // Buscar dados temporários
+        const tempDataResponse = await fetch(`/api/temp-data?key=${tempSlug}`);
+        console.log('3. TempData fetch response:', {
+          ok: tempDataResponse.ok,
+          status: tempDataResponse.status,
+        });
+
+        if (!tempDataResponse.ok) {
+          throw new Error('Dados temporários não encontrados');
         }
 
-        // Processar o pagamento e os dados finais
+        const { data: tempData } = await tempDataResponse.json();
+        console.log('4. TempData retrieved:', {
+          hasData: !!tempData,
+          plano: tempData?.plano,
+        });
+
+        // Processar o pagamento
         const response = await fetch('/api/process-payment', {
           method: 'POST',
           headers: {
@@ -39,8 +56,13 @@ function ReturnContent() {
           body: JSON.stringify({
             tempSlug,
             sessionId,
-            tempData: JSON.parse(tempData), // Enviar os dados no corpo da requisição
+            tempData,
           }),
+        });
+
+        console.log('5. Process payment response:', {
+          ok: response.ok,
+          status: response.status,
         });
 
         if (!response.ok) {

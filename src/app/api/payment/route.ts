@@ -81,18 +81,18 @@ export async function GET(request: Request) {
 export async function POST(request: Request) {
   try {
     const body = await request.json();
-    const { slug, plano, tempData } = body;
+    const { slug, plano } = body;
 
-    console.log('Payment request body:', { slug, plano, hasData: !!tempData });
+    console.log('=== Payment POST ===');
+    console.log('1. Received body:', { slug, plano });
 
-    if (!slug || !plano || !tempData) {
+    if (!slug || !plano) {
       return NextResponse.json(
         {
           error: 'Campos obrigatórios faltando',
           details: {
             slug: !!slug,
             plano: !!plano,
-            tempData: !!tempData,
           },
         },
         { status: 400 }
@@ -107,8 +107,33 @@ export async function POST(request: Request) {
       );
     }
 
-    // Extrair apenas os dados essenciais para os metadados do Stripe
-    const parsedTempData = JSON.parse(tempData);
+    // Buscar dados do TempData
+    const tempDataResponse = await prisma.tempData.findUnique({
+      where: { key: slug },
+    });
+
+    console.log('2. TempData response:', {
+      found: !!tempDataResponse,
+      key: slug,
+      expiresAt: tempDataResponse?.expiresAt,
+    });
+
+    if (!tempDataResponse) {
+      console.error('3. TempData não encontrado para o slug:', slug);
+      return NextResponse.json(
+        { error: 'Dados temporários não encontrados' },
+        { status: 404 }
+      );
+    }
+
+    // Parse dos dados temporários
+    const parsedTempData = JSON.parse(tempDataResponse.data);
+    console.log('4. Parsed TempData:', {
+      nome1: parsedTempData.nome1,
+      nome2: parsedTempData.nome2,
+      plano: parsedTempData.plano,
+    });
+
     const essentialData = {
       nome1: parsedTempData.nome1,
       nome2: parsedTempData.nome2,
@@ -138,22 +163,13 @@ export async function POST(request: Request) {
       metadata: {
         slug,
         plano,
-        tempDataKey: slug, // Usamos o slug como chave para recuperar os dados completos depois
+        tempDataKey: slug,
       },
     });
 
     if (!session?.url) {
       throw new Error('Não foi possível criar a URL de pagamento');
     }
-
-    // Salvar os dados temporários completos com o slug como chave
-    await prisma.tempData.create({
-      data: {
-        key: slug,
-        data: tempData,
-        expiresAt: new Date(Date.now() + 30 * 60 * 1000), // 30 minutos
-      },
-    });
 
     return NextResponse.json({ url: session.url });
   } catch (error) {

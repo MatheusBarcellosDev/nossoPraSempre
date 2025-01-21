@@ -38,12 +38,8 @@ function SuccessContent() {
     return (
       <div className="min-h-screen flex items-center justify-center">
         <div className="text-center space-y-4">
-          <h1 className="text-2xl font-semibold text-gray-900">
-            Página não encontrada
-          </h1>
-          <p className="text-gray-600">
-            Não foi possível encontrar os dados da página
-          </p>
+          <div className="w-16 h-16 border-4 border-romantic-200 border-t-romantic-500 rounded-full animate-spin mx-auto" />
+          <p className="text-romantic-600">Carregando...</p>
         </div>
       </div>
     );

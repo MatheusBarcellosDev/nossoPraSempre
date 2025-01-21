@@ -16,12 +16,19 @@ export async function POST(request: Request) {
   try {
     const { tempSlug, sessionId, tempData } = await request.json();
 
-    console.log('Iniciando processamento de pagamento:', {
+    console.log('=== Process Payment POST ===');
+    console.log('1. Received data:', {
       tempSlug,
       hasSessionId: !!sessionId,
+      hasTempData: !!tempData,
     });
 
     if (!tempSlug || !sessionId || !tempData) {
+      console.error('2. Missing required data:', {
+        hasTempSlug: !!tempSlug,
+        hasSessionId: !!sessionId,
+        hasTempData: !!tempData,
+      });
       return NextResponse.json(
         { error: 'Parâmetros obrigatórios faltando' },
         { status: 400 }
@@ -32,8 +39,10 @@ export async function POST(request: Request) {
     const stripe = require('stripe')(process.env.STRIPE_SECRET_KEY);
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    console.log('Status do pagamento:', session.payment_status);
-    console.log('Email do cliente:', session.customer_details?.email);
+    console.log('3. Stripe session status:', {
+      paymentStatus: session.payment_status,
+      customerEmail: session.customer_details?.email,
+    });
 
     if (session.payment_status !== 'paid') {
       return NextResponse.json(

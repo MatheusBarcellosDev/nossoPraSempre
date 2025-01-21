@@ -53,46 +53,23 @@ function FinalizarContent() {
       return;
     }
 
-    // Se for um slug temporário, recuperar dados do localStorage
-    if (slug.startsWith('temp-')) {
-      const tempData = localStorage.getItem('tempPageData');
-      if (!tempData) {
-        toast.error('Dados temporários não encontrados');
-        router.push('/');
-        return;
-      }
-
-      const data = JSON.parse(tempData);
-      // Verificar se os dados temporários expiraram (30 minutos)
-      if (Date.now() - data.timestamp > 30 * 60 * 1000) {
-        localStorage.removeItem('tempPageData');
-        toast.error('Tempo de preview expirado');
-        router.push('/');
-        return;
-      }
-
-      setPageData(data);
-      setIsLoading(false);
-    } else {
-      // Caso contrário, buscar do banco de dados
-      const fetchPageData = async () => {
-        try {
-          const response = await fetch(`/api/pages/${slug}`);
-          if (!response.ok) {
-            throw new Error('Página não encontrada');
-          }
-          const data = await response.json();
-          setPageData(data);
-        } catch {
-          toast.error('Erro ao carregar a página');
-          router.push('/');
-        } finally {
-          setIsLoading(false);
+    const fetchTempData = async () => {
+      try {
+        const response = await fetch(`/api/temp-data?key=${slug}`);
+        if (!response.ok) {
+          throw new Error('Dados temporários não encontrados');
         }
-      };
 
-      fetchPageData();
-    }
+        const { data } = await response.json();
+        setPageData(data);
+        setIsLoading(false);
+      } catch (error) {
+        toast.error('Erro ao carregar dados temporários');
+        router.push('/');
+      }
+    };
+
+    fetchTempData();
   }, [slug, router]);
 
   // Timer para expiração
@@ -102,7 +79,6 @@ function FinalizarContent() {
         setTimeLeft((prev) => {
           if (prev <= 1) {
             clearInterval(timer);
-            localStorage.removeItem('tempPageData');
             router.push('/');
             return 0;
           }
@@ -124,30 +100,14 @@ function FinalizarContent() {
     if (!pageData) return;
 
     try {
-      const tempData = localStorage.getItem('tempPageData');
-      if (!tempData) {
-        toast.error('Dados temporários não encontrados');
-        return;
-      }
-
-      const parsedTempData = JSON.parse(tempData);
-      const tempSlug = `temp-${Date.now()}`; // Gerar um slug temporário único
-
-      console.log('Dados do pagamento:', {
-        tempSlug,
-        plano: parsedTempData.plano,
-        tempData,
-      });
-
       const response = await fetch('/api/payment', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          slug: tempSlug,
-          plano: parsedTempData.plano,
-          tempData,
+          slug: slug,
+          plano: pageData.plano,
         }),
       });
 

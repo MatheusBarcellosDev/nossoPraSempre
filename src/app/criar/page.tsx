@@ -80,17 +80,29 @@ function CreateContent() {
     try {
       setIsSubmitting(true);
 
-      // Armazenar dados temporariamente no localStorage
-      const tempData = {
-        ...formData,
-        plano: plan.type,
-        timestamp: Date.now(), // Para controle de expiração
-      };
-
-      localStorage.setItem('tempPageData', JSON.stringify(tempData));
-
       // Gerar um slug temporário
       const tempSlug = `temp-${Date.now()}`;
+
+      // Salvar no TempData usando a nova rota
+      const response = await fetch('/api/temp-data', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          tempData: {
+            ...formData,
+            plano: plan.type,
+            timestamp: Date.now(),
+          },
+          slug: tempSlug,
+        }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao salvar dados temporários');
+      }
 
       toast.success('Dados salvos temporariamente!');
 
