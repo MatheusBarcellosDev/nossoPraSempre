@@ -1,8 +1,9 @@
 'use client';
 
-import { CldUploadWidget } from 'next-cloudinary';
 import { Upload, X } from 'lucide-react';
 import Image from 'next/image';
+import { toast } from 'react-hot-toast';
+import { useState } from 'react';
 
 interface ImageUploadProps {
   onUpload: (urls: string[]) => void;
@@ -15,30 +16,102 @@ export function ImageUpload({
   value = [],
   maxFiles = 6,
 }: ImageUploadProps) {
+  const [isProcessing, setIsProcessing] = useState(false);
+
   const handleRemoveImage = (urlToRemove: string) => {
     onUpload(value.filter((url) => url !== urlToRemove));
   };
 
-  const handleFileChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+  const processImage = async (file: File): Promise<string> => {
+    return new Promise((resolve, reject) => {
+      const img = document.createElement('img');
+      img.onload = () => {
+        const canvas = document.createElement('canvas');
+        const ctx = canvas.getContext('2d')!;
+
+        // Redimensionar para um tamanho máximo razoável para mobile
+        const MAX_SIZE = 1200;
+        let width = img.width;
+        let height = img.height;
+
+        if (width > height && width > MAX_SIZE) {
+          height = (height * MAX_SIZE) / width;
+          width = MAX_SIZE;
+        } else if (height > MAX_SIZE) {
+          width = (width * MAX_SIZE) / height;
+          height = MAX_SIZE;
+        }
+
+        canvas.width = width;
+        canvas.height = height;
+        ctx.drawImage(img, 0, 0, width, height);
+
+        // Converter para JPEG com qualidade reduzida
+        canvas.toBlob(
+          (blob) => {
+            if (!blob) {
+              reject(new Error('Falha ao processar imagem'));
+              return;
+            }
+            const reader = new FileReader();
+            reader.onloadend = () => resolve(reader.result as string);
+            reader.onerror = reject;
+            reader.readAsDataURL(blob);
+          },
+          'image/jpeg',
+          0.7 // Qualidade reduzida para arquivos menores
+        );
+      };
+
+      img.onerror = () => reject(new Error('Falha ao carregar imagem'));
+      img.src = URL.createObjectURL(file);
+    });
+  };
+
+  const handleFileChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     const files = e.target.files;
     if (!files) return;
 
+    setIsProcessing(true);
     const remainingSlots = maxFiles - value.length;
     const filesToProcess = Array.from(files).slice(0, remainingSlots);
 
-    Promise.all(
-      filesToProcess.map((file) => {
-        return new Promise<string>((resolve) => {
-          const reader = new FileReader();
-          reader.onloadend = () => {
-            resolve(reader.result as string);
-          };
-          reader.readAsDataURL(file);
-        });
-      })
-    ).then((base64urls) => {
-      onUpload([...value, ...base64urls]);
-    });
+    // Validar tamanho dos arquivos
+    const MAX_FILE_SIZE = 10 * 1024 * 1024; // 10MB
+    const oversizedFiles = filesToProcess.filter(
+      (file) => file.size > MAX_FILE_SIZE
+    );
+    if (oversizedFiles.length > 0) {
+      toast.error(
+        'Algumas imagens são muito grandes. O tamanho máximo é 10MB por imagem.'
+      );
+      setIsProcessing(false);
+      return;
+    }
+
+    try {
+      const processedImages: string[] = [];
+
+      // Processar imagens uma por uma
+      for (const file of filesToProcess) {
+        try {
+          const processedImage = await processImage(file);
+          processedImages.push(processedImage);
+          // Atualizar o estado parcialmente para feedback visual
+          onUpload([...value, ...processedImages]);
+        } catch (error) {
+          console.error('Erro ao processar imagem:', error);
+          toast.error(
+            `Erro ao processar uma das imagens. Tentando continuar...`
+          );
+        }
+      }
+    } catch (error) {
+      console.error('Erro ao processar imagens:', error);
+      toast.error('Erro ao processar algumas imagens. Tente novamente.');
+    } finally {
+      setIsProcessing(false);
+    }
   };
 
   return (
@@ -64,21 +137,31 @@ export function ImageUpload({
           </div>
         ))}
         {value.length < maxFiles && (
-          <label className="relative aspect-square rounded-lg border-2 border-dashed border-romantic-200 hover:border-romantic-300 transition-colors flex flex-col items-center justify-center gap-2 bg-romantic-50/50 hover:bg-romantic-50 text-romantic-600 hover:text-romantic-700 cursor-pointer">
+          <label
+            className={`relative aspect-square rounded-lg border-2 border-dashed border-romantic-200 hover:border-romantic-300 transition-colors flex flex-col items-center justify-center gap-2 bg-romantic-50/50 hover:bg-romantic-50 text-romantic-600 hover:text-romantic-700 ${
+              isProcessing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
+            }`}
+          >
             <input
               type="file"
               accept="image/*"
               multiple
               className="hidden"
               onChange={handleFileChange}
+              disabled={isProcessing}
               onClick={(e) => {
-                // Reset value to allow selecting the same file again
                 (e.target as HTMLInputElement).value = '';
               }}
             />
-            <Upload className="w-6 h-6" />
+            {isProcessing ? (
+              <div className="animate-spin rounded-full h-6 w-6 border-2 border-romantic-500 border-t-transparent" />
+            ) : (
+              <Upload className="w-6 h-6" />
+            )}
             <div className="text-sm text-center">
-              <p className="font-medium">Carregar foto</p>
+              <p className="font-medium">
+                {isProcessing ? 'Processando...' : 'Carregar foto'}
+              </p>
               <p className="text-xs text-romantic-500">
                 {maxFiles - value.length}{' '}
                 {maxFiles - value.length === 1
