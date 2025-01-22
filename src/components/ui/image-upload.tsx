@@ -59,7 +59,7 @@ export function ImageUpload({
             reader.readAsDataURL(blob);
           },
           'image/jpeg',
-          0.7 // Qualidade reduzida para arquivos menores
+          0.8 // Qualidade reduzida para arquivos menores
         );
       };
 

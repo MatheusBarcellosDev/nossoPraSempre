@@ -5,28 +5,30 @@ import { supabase } from '@/lib/supabase';
 import path from 'path';
 import slugify from 'slugify';
 import Stripe from 'stripe';
+import { randomBytes } from 'crypto';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
+function generateUniqueId() {
+  const timestamp = Date.now().toString(36); // Base 36 timestamp
+  const randomNum = Math.random().toString(36).substring(2, 8); // 6 caracteres aleatórios
+  const randomHex = randomBytes(2).toString('hex'); // 4 caracteres hexadecimais
+  return `${timestamp}${randomNum}${randomHex}`;
+}
+
 export async function POST(request: Request) {
   try {
-    const { tempSlug, sessionId, tempData } = await request.json();
+    const { sessionId, tempData } = await request.json();
 
-    console.log('=== Process Payment POST ===');
-    console.log('1. Received data:', {
-      tempSlug,
-      hasSessionId: !!sessionId,
-      hasTempData: !!tempData,
-    });
-
-    if (!tempSlug || !sessionId || !tempData) {
+    if (!sessionId || !tempData) {
       console.error('2. Missing required data:', {
-        hasTempSlug: !!tempSlug,
         hasSessionId: !!sessionId,
         hasTempData: !!tempData,
       });
-      return NextResponse.json(
-        { error: 'Parâmetros obrigatórios faltando' },
+      return new Response(
+        JSON.stringify({
+          error: 'Dados obrigatórios faltando',
+        }),
         { status: 400 }
       );
     }
@@ -34,107 +36,101 @@ export async function POST(request: Request) {
     // Verificar o status do pagamento
     const session = await stripe.checkout.sessions.retrieve(sessionId);
 
-    console.log('3. Stripe session status:', {
-      paymentStatus: session.payment_status,
-      customerEmail: session.customer_details?.email,
-    });
-
     if (session.payment_status !== 'paid') {
-      return NextResponse.json(
-        { error: 'Pagamento não confirmado' },
+      return new Response(
+        JSON.stringify({
+          error: 'Pagamento não confirmado',
+        }),
         { status: 400 }
       );
     }
 
-    console.log('Iniciando upload das imagens...');
-
-    // Usar as URLs que já estão no Supabase
-    const uploadedImages = tempData.fotos;
-
-    // Criar slug final baseado nos nomes
+    // Gerar um slug único
     const baseSlug = slugify(`${tempData.nome1}-e-${tempData.nome2}`, {
       lower: true,
       strict: true,
     });
+    const uniqueId = generateUniqueId();
+    const slug = `${baseSlug}-${uniqueId}`;
 
-    // Verificar se o slug já existe
-    let finalSlug = baseSlug;
-    let counter = 1;
-
-    await prisma.$transaction(async (tx) => {
-      // Verificar se já existe
-      const existingPage = await tx.page.findUnique({
-        where: { slug: finalSlug },
-      });
-
-      if (!existingPage) {
-        // Após confirmação do pagamento
-        const finalImages = await Promise.all(
-          uploadedImages.map(async (url: string) => {
-            // Se a imagem já está no bucket temporário, mover para pasta final
-            if (url.includes('wedding-photos')) {
-              const oldPath = url.split('wedding-photos/')[1];
-              const newPath = `final/${tempData.nome1}-${
-                tempData.nome2
-              }/${path.basename(oldPath)}`;
-
-              await supabase.storage
-                .from('wedding-photos')
-                .move(oldPath, newPath);
-
-              return supabase.storage
-                .from('wedding-photos')
-                .getPublicUrl(newPath).data.publicUrl;
-            }
-
-            return url;
-          })
+    // Upload das imagens para o storage permanente
+    const uploadedImages = await Promise.all(
+      tempData.fotos.map(async (foto: string) => {
+        // Otimizar e fazer upload da imagem
+        const optimizeResponse = await fetch(
+          `${process.env.NEXT_PUBLIC_URL}/api/optimize-image`,
+          {
+            method: 'POST',
+            headers: {
+              'Content-Type': 'application/json',
+            },
+            body: JSON.stringify({
+              image: foto,
+              folder: `pages/${slug}`,
+            }),
+          }
         );
 
-        // Salvar página com as novas URLs
-        await tx.page.create({
-          data: {
-            nome1: tempData.nome1,
-            nome2: tempData.nome2,
-            data: tempData.data,
-            mensagem: tempData.mensagem,
-            template: tempData.template,
-            musica: tempData.musica,
-            fotos: finalImages,
-            slug: finalSlug,
-            plano: tempData.plano,
-            isPago: true,
-          },
-        });
-      }
-    });
+        if (!optimizeResponse.ok) {
+          const error = await optimizeResponse.json();
+          throw new Error(error.error || 'Erro ao otimizar imagem');
+        }
 
-    console.log('Processamento concluído com sucesso');
+        const { url } = await optimizeResponse.json();
+        return url;
+      })
+    );
 
-    // Enviar email com os dados da página
-    if (session.customer_details?.email) {
-      await sendSuccessEmail({
+    // Criar a página no banco de dados
+    const page = await prisma.page.create({
+      data: {
+        slug,
         nome1: tempData.nome1,
         nome2: tempData.nome2,
-        slug: finalSlug,
-        email: session.customer_details.email,
-      });
+        data: tempData.data,
+        mensagem: tempData.mensagem,
+        fotos: uploadedImages,
+        musica: tempData.musica,
+        template: tempData.template,
+        plano: tempData.plano,
+        isPago: true,
+        isPrivate: tempData.isPrivate || false,
+        password: tempData.password,
+      },
+    });
+
+    // Enviar email de confirmação
+    if (session.customer_details?.email) {
+      try {
+        await sendSuccessEmail({
+          nome1: tempData.nome1,
+          nome2: tempData.nome2,
+          slug: page.slug,
+          email: session.customer_details.email,
+          isPrivate: tempData.isPrivate,
+          password: tempData.password,
+        });
+      } catch (error) {
+        console.error('Erro ao enviar email:', error);
+      }
     }
 
-    return NextResponse.json({
-      success: true,
-      slug: finalSlug,
+    // Limpar dados temporários
+    await prisma.tempData
+      .delete({
+        where: { key: tempData.slug },
+      })
+      .catch(() => {}); // Ignora erro se os dados já foram limpos
+
+    return new Response(JSON.stringify({ slug: page.slug }), {
+      status: 200,
     });
   } catch (error) {
     console.error('Processing error:', error);
-    return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Erro ao processar dados do pagamento',
-        details: error,
-      },
+    return new Response(
+      JSON.stringify({
+        error: 'Erro ao processar pagamento',
+      }),
       { status: 500 }
     );
   }

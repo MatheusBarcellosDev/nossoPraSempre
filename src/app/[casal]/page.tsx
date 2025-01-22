@@ -6,6 +6,7 @@ import { templates } from '@/components/templates';
 import { QRCodeCanvas } from 'qrcode.react';
 import { Share2, Printer } from 'lucide-react';
 import { toast } from 'sonner';
+import { PasswordCheck } from '@/components/PasswordCheck';
 
 interface PageData {
   nome1: string;
@@ -16,12 +17,15 @@ interface PageData {
   musica?: string;
   template: 'romantico' | 'moderno' | 'minimalista';
   isPago: boolean;
+  isPrivate?: boolean;
+  password?: string;
 }
 
 export default function Page() {
   const pathname = usePathname();
   const [pageData, setPageData] = useState<PageData | null>(null);
   const [loading, setLoading] = useState(true);
+  const [isAuthenticated, setIsAuthenticated] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -30,11 +34,10 @@ export default function Page() {
         const response = await fetch(`/api/pages?slug=${slug}`);
         if (!response.ok) throw new Error('Página não encontrada');
         const data = await response.json();
-        // Não é mais necessário transformar os dados
         setPageData(data);
       } catch (error) {
-        toast.error('Erro ao carregar a página');
         console.error(error);
+        toast.error('Erro ao carregar a página');
       } finally {
         setLoading(false);
       }
@@ -42,6 +45,29 @@ export default function Page() {
 
     fetchData();
   }, [pathname]);
+
+  const handlePasswordSubmit = async (password: string) => {
+    try {
+      const response = await fetch('/api/verify-password', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({
+          slug: pathname.replace('/', ''),
+          password,
+        }),
+      });
+
+      if (response.ok) {
+        setIsAuthenticated(true);
+        return true;
+      }
+      return false;
+    } catch (error) {
+      return false;
+    }
+  };
 
   if (loading) {
     return (
@@ -58,14 +84,41 @@ export default function Page() {
     return <div>Página não encontrada</div>;
   }
 
+  if (pageData.isPrivate && !isAuthenticated) {
+    return <PasswordCheck onPasswordSubmit={handlePasswordSubmit} />;
+  }
+
   const Template = templates[pageData.template];
   const fullUrl = `${window.location.origin}${pathname}`;
+
+  const jsonLd = {
+    '@context': 'https://schema.org',
+    '@type': 'WebPage',
+    name: `${pageData.nome1} & ${pageData.nome2} - Nossa História de Amor`,
+    description: pageData.mensagem,
+    url: fullUrl,
+    image: pageData.fotos[0],
+    datePublished: new Date().toISOString(),
+    author: {
+      '@type': 'Person',
+      name: `${pageData.nome1} e ${pageData.nome2}`,
+    },
+    publisher: {
+      '@type': 'Organization',
+      name: 'O Nosso Pra Sempre',
+      logo: {
+        '@type': 'ImageObject',
+        url: `${window.location.origin}/favicon.svg`,
+      },
+    },
+  };
 
   const handleShare = async () => {
     try {
       const text =
-        `${pageData.nome1} criou uma página especial para celebrar seu amor com ${pageData.nome2}! 💑\n\n` +
-        `Acesse a página diretamente pelo link ou escaneie o QR Code na versão impressa:\n${fullUrl}`;
+        `Venha conhecer nossa página especial no O Nosso Pra Sempre! 💑\n\n` +
+        `${pageData.nome1} e ${pageData.nome2} compartilharam sua história de amor.\n` +
+        `Acesse a página diretamente pelo link ou escaneie o QR Code:\n${fullUrl}`;
 
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
       window.open(whatsappUrl, '_blank');
@@ -142,6 +195,10 @@ export default function Page() {
 
   return (
     <>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
       <div className="hidden">
         <div id="qr-code">
           <QRCodeCanvas value={fullUrl} size={200} />

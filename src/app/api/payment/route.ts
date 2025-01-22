@@ -6,7 +6,7 @@ const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
 const plans = {
   basic: {
-    price: 100, // R$ 1,00
+    price: 1990, // R$ 19,90
     name: 'Plano Básico',
   },
   premium: {
@@ -22,7 +22,7 @@ export async function GET(request: Request) {
 
     if (!sessionId) {
       return NextResponse.json(
-        { error: 'Missing session_id' },
+        { error: 'Session ID não fornecido' },
         { status: 400 }
       );
     }
@@ -53,13 +53,8 @@ export async function GET(request: Request) {
         where: { slug },
         data: {
           isPago: true,
-          // Aqui você pode adicionar outros campos que precisam ser atualizados
-          // como as URLs das imagens do Cloudinary, etc.
         },
       });
-
-      // Aqui você pode adicionar a lógica para processar as imagens no Cloudinary
-      // e atualizar as URLs no banco de dados
     }
 
     return NextResponse.json({
@@ -70,7 +65,7 @@ export async function GET(request: Request) {
   } catch (error) {
     console.error('Session error:', error);
     return NextResponse.json(
-      { error: 'Error retrieving session' },
+      { error: 'Erro ao verificar status do pagamento' },
       { status: 500 }
     );
   }
@@ -78,68 +73,30 @@ export async function GET(request: Request) {
 
 export async function POST(request: Request) {
   try {
-    const body = await request.json();
-    const { slug, plano } = body;
+    const { slug, plano } = await request.json();
 
-    console.log('=== Payment POST ===');
-    console.log('1. Received body:', { slug, plano });
-
-    if (!slug || !plano) {
+    if (!slug || !plano || !plans[plano as keyof typeof plans]) {
       return NextResponse.json(
         {
-          error: 'Campos obrigatórios faltando',
-          details: {
-            slug: !!slug,
-            plano: !!plano,
-          },
+          error: 'Dados inválidos',
         },
         { status: 400 }
       );
     }
 
-    const selectedPlan = plans[plano as keyof typeof plans];
-    if (!selectedPlan) {
-      return NextResponse.json(
-        { error: 'Plano inválido selecionado', plano },
-        { status: 400 }
-      );
-    }
-
-    // Buscar dados do TempData
-    const tempDataResponse = await prisma.tempData.findUnique({
+    // Buscar dados temporários usando Prisma
+    const tempData = await prisma.tempData.findUnique({
       where: { key: slug },
     });
 
-    console.log('2. TempData response:', {
-      found: !!tempDataResponse,
-      key: slug,
-      expiresAt: tempDataResponse?.expiresAt,
-    });
-
-    if (!tempDataResponse) {
+    if (!tempData || new Date() > tempData.expiresAt) {
       console.error('3. TempData não encontrado para o slug:', slug);
       return NextResponse.json(
-        { error: 'Dados temporários não encontrados' },
+        { error: 'Dados temporários não encontrados ou expirados' },
         { status: 404 }
       );
     }
 
-    // Parse dos dados temporários
-    const parsedTempData = JSON.parse(tempDataResponse.data);
-    console.log('4. Parsed TempData:', {
-      nome1: parsedTempData.nome1,
-      nome2: parsedTempData.nome2,
-      plano: parsedTempData.plano,
-    });
-
-    const essentialData = {
-      nome1: parsedTempData.nome1,
-      nome2: parsedTempData.nome2,
-      plano: parsedTempData.plano,
-      template: parsedTempData.template,
-    };
-
-    // Criar a sessão do Stripe
     const session = await stripe.checkout.sessions.create({
       payment_method_types: ['card'],
       line_items: [
@@ -147,10 +104,12 @@ export async function POST(request: Request) {
           price_data: {
             currency: 'brl',
             product_data: {
-              name: selectedPlan.name,
-              description: `Página personalizada para ${essentialData.nome1} e ${essentialData.nome2}`,
+              name: plans[plano as keyof typeof plans].name,
+              description: `Acesso ${
+                plano === 'basic' ? 'por 1 ano' : 'vitalício'
+              } à sua página especial`,
             },
-            unit_amount: selectedPlan.price,
+            unit_amount: plans[plano as keyof typeof plans].price,
           },
           quantity: 1,
         },
@@ -158,28 +117,14 @@ export async function POST(request: Request) {
       mode: 'payment',
       success_url: `${process.env.NEXT_PUBLIC_URL}/return?session_id={CHECKOUT_SESSION_ID}&temp_slug=${slug}`,
       cancel_url: `${process.env.NEXT_PUBLIC_URL}/criar/finalizar?slug=${slug}`,
-      metadata: {
-        slug,
-        plano,
-        tempDataKey: slug,
-      },
+      metadata: { slug }, // Adicionando o slug aos metadados da sessão
     });
-
-    if (!session?.url) {
-      throw new Error('Não foi possível criar a URL de pagamento');
-    }
 
     return NextResponse.json({ url: session.url });
   } catch (error) {
     console.error('Payment error:', error);
     return NextResponse.json(
-      {
-        error:
-          error instanceof Error
-            ? error.message
-            : 'Erro ao criar sessão de pagamento',
-        details: error,
-      },
+      { error: 'Erro ao criar sessão de pagamento' },
       { status: 500 }
     );
   }

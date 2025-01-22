@@ -130,7 +130,7 @@ function FinalizarContent() {
 
   const handleShare = () => {
     const fullUrl = `${window.location.origin}/${pageData?.slug}`;
-    const message = `Olá! Venha conferir nossa página de casamento: ${fullUrl}`;
+    const message = `Venha conhecer nossa página especial no O Nosso Pra Sempre! 💑\n\nAcesse: ${fullUrl}`;
     const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(message)}`;
     window.open(whatsappUrl, '_blank');
   };

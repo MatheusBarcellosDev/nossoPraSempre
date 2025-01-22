@@ -18,75 +18,58 @@ function ReturnContent() {
         const sessionId = searchParams.get('session_id');
         const tempSlug = searchParams.get('temp_slug');
 
-        console.log('=== Return Page ===');
-        console.log('1. Processing payment with:', {
-          sessionId,
-          tempSlug,
-        });
-
         if (!sessionId || !tempSlug) {
           console.error('2. Missing required params:', { sessionId, tempSlug });
-          setError('Dados da sessão não encontrados');
+          setError('Parâmetros inválidos');
           return;
         }
 
-        // Buscar dados temporários
+        // Fetch temp data
         const tempDataResponse = await fetch(`/api/temp-data?key=${tempSlug}`);
-        console.log('3. TempData fetch response:', {
-          ok: tempDataResponse.ok,
-          status: tempDataResponse.status,
-        });
-
         if (!tempDataResponse.ok) {
-          throw new Error('Dados temporários não encontrados');
+          const errorData = await tempDataResponse.json();
+          throw new Error(
+            errorData.error || 'Dados temporários não encontrados'
+          );
         }
 
         const { data: tempData } = await tempDataResponse.json();
-        console.log('4. TempData retrieved:', {
-          hasData: !!tempData,
-          plano: tempData?.plano,
-        });
 
-        // Processar o pagamento
+        if (!tempData) {
+          throw new Error('Dados temporários inválidos');
+        }
+
+        // Process payment
         const response = await fetch('/api/process-payment', {
           method: 'POST',
           headers: {
             'Content-Type': 'application/json',
           },
           body: JSON.stringify({
-            tempSlug,
             sessionId,
-            tempData,
+            tempData: {
+              ...tempData,
+              slug: tempSlug,
+            },
           }),
-        });
-
-        console.log('5. Process payment response:', {
-          ok: response.ok,
-          status: response.status,
         });
 
         if (!response.ok) {
           const errorData = await response.json();
-          throw new Error(errorData.error || 'Erro ao processar o pagamento');
+          throw new Error(errorData.error || 'Erro ao processar pagamento');
         }
 
-        const data = await response.json();
-
-        // Limpar dados temporários
-        localStorage.removeItem('tempPageData');
-
+        const { slug } = await response.json();
         setIsSuccess(true);
 
-        // Redirecionar para a página de sucesso após 3 segundos
+        // Aguarda um pouco antes de redirecionar
         setTimeout(() => {
-          router.push(`/success?slug=${data.slug}`);
+          router.push(`/${slug}`);
         }, 3000);
       } catch (error) {
         console.error('Error:', error);
         setError(
-          error instanceof Error
-            ? error.message
-            : 'Erro ao processar o pagamento'
+          error instanceof Error ? error.message : 'Erro ao processar pagamento'
         );
       } finally {
         setIsLoading(false);
@@ -106,6 +89,7 @@ function ReturnContent() {
           <p className="text-romantic-600">
             Aguarde enquanto finalizamos seu pedido...
           </p>
+          <div className="w-16 h-16 border-4 border-romantic-200 border-t-romantic-500 rounded-full animate-spin mx-auto" />
         </div>
       </div>
     );
@@ -134,6 +118,7 @@ function ReturnContent() {
         <p className="text-romantic-600">
           Sua página está sendo criada e você será redirecionado em instantes.
         </p>
+        <div className="w-16 h-16 border-4 border-romantic-200 border-t-romantic-500 rounded-full animate-spin mx-auto" />
       </div>
     </div>
   );

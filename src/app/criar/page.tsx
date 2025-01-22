@@ -14,6 +14,7 @@ import { usePlan, PlanType, PLANS } from '@/contexts/PlanContext';
 import { toast } from 'sonner';
 import { optimizeImage } from '@/lib/imageOptimizer';
 import { supabase } from '@/lib/supabase';
+import slugify from 'slugify';
 
 function CreateContent() {
   const router = useRouter();
@@ -39,18 +40,28 @@ function CreateContent() {
     fotos: [] as string[],
     musica: '',
     template: 'romantico' as TemplateType,
+    isPrivate: false,
+    password: '',
+    confirmPassword: '',
   });
+
+  const [passwordMatch, setPasswordMatch] = useState(true);
+
+  useEffect(() => {
+    if (formData.isPrivate && formData.password && formData.confirmPassword) {
+      setPasswordMatch(formData.password === formData.confirmPassword);
+    } else {
+      setPasswordMatch(true);
+    }
+  }, [formData.password, formData.confirmPassword, formData.isPrivate]);
 
   const handleImageUpload = async (urls: string[]) => {
     if (!plan) return;
 
     try {
-      console.log('1. Salvando imagens no estado');
-
-      // Apenas salvar as URLs base64 no estado
       setFormData((prev) => ({
         ...prev,
-        fotos: urls, // Salvar as URLs base64 diretamente
+        fotos: urls,
       }));
     } catch (error) {
       console.error('Erro ao salvar imagens:', error);
@@ -58,71 +69,78 @@ function CreateContent() {
     }
   };
 
-  const handleSubmit = async () => {
-    if (!plan) return;
+  const handleSubmit = async (e: React.FormEvent) => {
+    e.preventDefault();
+    if (isSubmitting) return;
+
+    if (formData.isPrivate && formData.password !== formData.confirmPassword) {
+      toast.error('As senhas não coincidem');
+      return;
+    }
+
+    if (!plan) {
+      toast.error('Por favor, selecione um plano antes de continuar');
+      return;
+    }
 
     try {
       setIsSubmitting(true);
-      console.log('1. Iniciando upload das imagens');
 
-      const optimizedUrls = await Promise.all(
-        formData.fotos.map(async (base64Image, index) => {
-          const response = await fetch('/api/optimize-image', {
-            method: 'POST',
-            headers: {
-              'Content-Type': 'application/json',
-            },
-            body: JSON.stringify({
-              image: base64Image,
-              folder: `temp/${Date.now()}`,
-            }),
-          });
+      // Validar campos obrigatórios
+      if (!formData.nome1 || !formData.nome2 || !formData.data) {
+        toast.error('Preencha todos os campos obrigatórios');
+        return;
+      }
 
-          const data = await response.json();
+      // Validar quantidade de fotos
+      if (formData.fotos.length === 0) {
+        toast.error('Adicione pelo menos uma foto');
+        return;
+      }
 
-          if (!response.ok) {
-            console.error(`Erro detalhado da imagem ${index + 1}:`, data);
-            throw new Error(
-              data.details || `Erro ao processar imagem ${index + 1}`
-            );
-          }
+      if (formData.fotos.length > (plan.type === 'basic' ? 3 : 6)) {
+        toast.error(
+          `Seu plano permite apenas ${plan.type === 'basic' ? '3' : '6'} fotos`
+        );
+        return;
+      }
 
-          return data.url;
-        })
-      );
+      // Gerar slug único
+      const baseSlug = slugify(`${formData.nome1}-e-${formData.nome2}`, {
+        lower: true,
+        strict: true,
+      });
 
-      // Gerar um slug temporário
-      const tempSlug = `temp-${Date.now()}`;
+      const tempData = {
+        ...formData,
+        slug: baseSlug,
+        plano: plan.type,
+        isPago: false,
+      };
 
-      // Salvar dados temporários
       const response = await fetch('/api/temp-data', {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
         body: JSON.stringify({
-          tempData: {
-            ...formData,
-            fotos: optimizedUrls,
-            plano: plan.type,
-          },
-          slug: tempSlug,
+          key: baseSlug,
+          data: tempData,
+          sessionId,
         }),
       });
 
-      const responseData = await response.json();
-
       if (!response.ok) {
-        throw new Error(
-          responseData.error || 'Erro ao salvar dados temporários'
-        );
+        const error = await response.json();
+        throw new Error(error.error || 'Erro ao salvar dados');
       }
 
-      toast.success('Dados salvos temporariamente!');
-      router.push(`/criar/finalizar?slug=${tempSlug}`);
+      router.push(`/criar/finalizar?slug=${baseSlug}`);
     } catch (error) {
       console.error('Error:', error);
-      toast.error('Erro ao salvar os dados. Por favor, tente novamente.');
+      toast.error(
+        error instanceof Error ? error.message : 'Erro ao criar página'
+      );
     } finally {
       setIsSubmitting(false);
     }
@@ -213,6 +231,86 @@ function CreateContent() {
                       }
                     />
                   </div>
+
+                  <div className="space-y-4 pt-4 border-t border-gray-100">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="isPrivate"
+                        className="w-4 h-4 text-romantic-500 border-gray-300 rounded focus:ring-romantic-500"
+                        checked={formData.isPrivate}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            isPrivate: e.target.checked,
+                            password: e.target.checked ? prev.password : '',
+                          }))
+                        }
+                      />
+                      <Label htmlFor="isPrivate">Tornar página privada</Label>
+                    </div>
+                    <p className="text-sm text-romantic-600">
+                      Por padrão, qualquer pessoa com o link pode acessar sua
+                      página. Ative esta opção para proteger sua página com
+                      senha e garantir que apenas pessoas autorizadas possam
+                      visualizá-la.
+                    </p>
+
+                    {formData.isPrivate && (
+                      <div className="space-y-2">
+                        <div className="space-y-2">
+                          <Label htmlFor="password">
+                            <div className="flex items-center gap-2">
+                              Senha de acesso
+                            </div>
+                          </Label>
+                          <Input
+                            type="password"
+                            id="password"
+                            name="password"
+                            value={formData.password}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                password: e.target.value,
+                              }))
+                            }
+                            placeholder="Digite uma senha para proteger sua página"
+                          />
+                        </div>
+                        <div className="space-y-2">
+                          <Label htmlFor="confirmPassword">
+                            <div className="flex items-center gap-2">
+                              Confirmar Senha
+                            </div>
+                          </Label>
+                          <Input
+                            type="password"
+                            id="confirmPassword"
+                            name="confirmPassword"
+                            value={formData.confirmPassword}
+                            onChange={(e) =>
+                              setFormData((prev) => ({
+                                ...prev,
+                                confirmPassword: e.target.value,
+                              }))
+                            }
+                            placeholder="Digite a senha novamente"
+                            className={
+                              !passwordMatch
+                                ? 'border-red-500 focus:ring-red-500'
+                                : ''
+                            }
+                          />
+                          {!passwordMatch && (
+                            <p className="text-sm text-red-500">
+                              As senhas não coincidem
+                            </p>
+                          )}
+                        </div>
+                      </div>
+                    )}
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -241,12 +339,10 @@ function CreateContent() {
 
                 <div className="space-y-4">
                   <div className="space-y-2">
-                    <Label htmlFor="musica">
-                      Link da Música (Spotify/YouTube)
-                    </Label>
+                    <Label htmlFor="musica">Link da Música (YouTube)</Label>
                     <Input
                       id="musica"
-                      placeholder="Cole o link da música aqui"
+                      placeholder="Cole o link do YouTube aqui"
                       value={formData.musica}
                       onChange={(e) =>
                         setFormData((prev) => ({

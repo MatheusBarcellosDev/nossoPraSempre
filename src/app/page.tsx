@@ -1,4 +1,4 @@
-import { Heart, Sparkles, Timer } from 'lucide-react';
+import { Heart, Sparkles, Timer, Mail, ChevronDown } from 'lucide-react';
 import HeroSection from '@/components/HeroSection';
 import {
   Card,
@@ -10,7 +10,7 @@ import { PlansSection } from '@/components/PlansSection';
 
 export default function Home() {
   return (
-    <main className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-100 to-gray-200 p-8">
+    <main className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-100 to-gray-200 pb-0 pt-8 px-8">
       <HeroSection />
 
       {/* Como Funciona */}
@@ -118,6 +118,130 @@ export default function Home() {
 
       {/* Planos */}
       <PlansSection />
+
+      {/* FAQ */}
+      <section className="max-w-3xl mx-auto px-4 mt-24 mb-24">
+        <h2 className="text-3xl font-semibold text-romantic-800 text-center mb-12">
+          Perguntas Frequentes
+        </h2>
+        <div className="space-y-4">
+          <div className="bg-white rounded-lg shadow-sm border border-romantic-100">
+            <details className="group">
+              <summary className="flex items-center justify-between p-4 cursor-pointer">
+                <h3 className="text-lg font-medium text-romantic-800">
+                  Como funciona o pagamento?
+                </h3>
+                <ChevronDown className="w-5 h-5 text-romantic-500 transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="px-4 pb-4 text-romantic-600">
+                O pagamento é processado de forma segura através do sistema
+                Stripe, aceitando os principais cartões de crédito nacionais e
+                internacionais.
+              </div>
+            </details>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border border-romantic-100">
+            <details className="group">
+              <summary className="flex items-center justify-between p-4 cursor-pointer">
+                <h3 className="text-lg font-medium text-romantic-800">
+                  Por quanto tempo minha página fica disponível?
+                </h3>
+                <ChevronDown className="w-5 h-5 text-romantic-500 transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="px-4 pb-4 text-romantic-600">
+                Depende do plano escolhido. O plano básico oferece 1 ano de
+                acesso, enquanto o plano premium garante acesso vitalício à sua
+                página especial.
+              </div>
+            </details>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border border-romantic-100">
+            <details className="group">
+              <summary className="flex items-center justify-between p-4 cursor-pointer">
+                <h3 className="text-lg font-medium text-romantic-800">
+                  Quais recursos estão inclusos na página?
+                </h3>
+                <ChevronDown className="w-5 h-5 text-romantic-500 transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="px-4 pb-4 text-romantic-600">
+                Sua página inclui galeria de fotos com carrossel, música
+                personalizada, contador de tempo juntos, mensagem especial e
+                design responsivo que funciona em qualquer dispositivo.
+              </div>
+            </details>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border border-romantic-100">
+            <details className="group">
+              <summary className="flex items-center justify-between p-4 cursor-pointer">
+                <h3 className="text-lg font-medium text-romantic-800">
+                  Como compartilho minha página?
+                </h3>
+                <ChevronDown className="w-5 h-5 text-romantic-500 transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="px-4 pb-4 text-romantic-600">
+                Você recebe um link exclusivo e um QR Code para compartilhar
+                facilmente. Pode enviar por WhatsApp, redes sociais ou imprimir
+                o QR Code para eventos especiais.
+              </div>
+            </details>
+          </div>
+
+          <div className="bg-white rounded-lg shadow-sm border border-romantic-100">
+            <details className="group">
+              <summary className="flex items-center justify-between p-4 cursor-pointer">
+                <h3 className="text-lg font-medium text-romantic-800">
+                  Todos terão acesso à minha página?
+                </h3>
+                <ChevronDown className="w-5 h-5 text-romantic-500 transition-transform group-open:rotate-180" />
+              </summary>
+              <div className="px-4 pb-4 text-romantic-600">
+                Você tem total controle sobre quem pode acessar sua página. Por
+                padrão, ela é pública e pode ser acessada por qualquer pessoa
+                com o link, mas você tem a opção de protegê-la com senha,
+                garantindo que apenas pessoas autorizadas possam visualizar seu
+                conteúdo.
+              </div>
+            </details>
+          </div>
+        </div>
+      </section>
+
+      {/* Footer */}
+      <footer className="bg-romantic-800 text-romantic-100 py-12 -mx-8">
+        <div className="max-w-6xl mx-auto px-8">
+          <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
+            <div>
+              <h3 className="text-2xl font-semibold mb-4">
+                O Nosso Pra Sempre
+              </h3>
+              <p className="text-romantic-200 max-w-md">
+                Eternize sua história de amor com uma página única e especial.
+              </p>
+            </div>
+            <div className="space-y-4">
+              <h4 className="text-xl font-medium">Contato</h4>
+              <p className="flex items-center gap-2">
+                <Mail className="w-5 h-5" />
+                <a
+                  href="mailto:contato@onossoprasempre.com.br"
+                  className="hover:text-romantic-300 transition-colors"
+                >
+                  contato@onossoprasempre.com.br
+                </a>
+              </p>
+            </div>
+          </div>
+          <div className="border-t border-romantic-700 mt-8 pt-8 text-center text-romantic-300">
+            <p>
+              &copy; {new Date().getFullYear()} O Nosso Pra Sempre. Todos os
+              direitos reservados.
+            </p>
+          </div>
+        </div>
+      </footer>
     </main>
   );
 }

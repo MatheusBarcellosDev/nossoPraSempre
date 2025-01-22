@@ -2,7 +2,7 @@ import nodemailer from 'nodemailer';
 
 const transporter = nodemailer.createTransport({
   host: 'smtp.hostinger.com',
-  port: 587, // Mantendo a porta que estava funcionando
+  port: 587,
   secure: false,
   auth: {
     user: 'contato@onossoprasempre.com.br',
@@ -30,6 +30,8 @@ export async function sendSuccessEmail(pageData: {
   nome2: string;
   slug: string;
   email: string;
+  isPrivate?: boolean;
+  password?: string;
 }) {
   const baseUrl = process.env.NEXT_PUBLIC_URL;
   const pageUrl = `${baseUrl}/${pageData.slug}`;
@@ -46,7 +48,9 @@ export async function sendSuccessEmail(pageData: {
         <h1 style="color: #333; text-align: center;">Sua página está pronta! 🎉</h1>
         
         <div style="background-color: #f9f9f9; padding: 20px; border-radius: 10px; margin: 20px 0;">
-          <h2 style="color: #666; text-align: center;">${pageData.nome1} e ${pageData.nome2}</h2>
+          <h2 style="color: #666; text-align: center;">${pageData.nome1} e ${
+      pageData.nome2
+    }</h2>
           
           <p style="text-align: center; color: #666; margin: 20px 0;">
             Sua página especial foi criada com sucesso! Agora você pode compartilhar esse momento único com quem você ama.
@@ -64,6 +68,21 @@ export async function sendSuccessEmail(pageData: {
               ${pageUrl}
             </p>
           </div>
+
+          ${
+            pageData.isPrivate
+              ? `
+          <div style="text-align: center; margin: 20px 0; padding: 15px; background-color: #fff3f8; border-radius: 5px;">
+            <p style="color: #ff4b91; margin-bottom: 10px; font-weight: bold;">Informações de Acesso</p>
+            <p style="color: #666;">Sua página está protegida por senha.</p>
+            <p style="color: #666; margin-top: 10px;">Senha de acesso: <strong>${pageData.password}</strong></p>
+            <p style="color: #666; font-size: 0.9em; margin-top: 10px;">
+              Compartilhe esta senha apenas com as pessoas que você deseja que acessem sua página.
+            </p>
+          </div>
+          `
+              : ''
+          }
 
           <div style="text-align: center; margin-top: 20px;">
             <p style="color: #666;">
