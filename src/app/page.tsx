@@ -1,9 +1,13 @@
-import HeroSection from '@/components/HeroSection';
-import { PlansSection } from '@/components/PlansSection';
+import dynamic from 'next/dynamic';
 import { FAQSection } from '@/components/FAQSection';
 import { HowItWorks } from '@/components/HowItWorks';
 import { SpecialFeatures } from '@/components/SpecialFeatures';
 import { Footer } from '@/components/Footer';
+import { PlansSection } from '@/components/PlansSection';
+
+const HeroSection = dynamic(() => import('../components/HeroSection'), {
+  ssr: false,
+});
 
 export default function Home() {
   return (

@@ -1,18 +1,11 @@
 'use client';
 
-import { useEffect, useState } from 'react';
 import { Button } from '@/components/ui/button';
 import { ArrowDown } from 'lucide-react';
 
 export default function HeroSection() {
-  const [isClient, setIsClient] = useState(false);
-
-  useEffect(() => {
-    setIsClient(true);
-  }, []);
-
   const scrollToPlans = () => {
-    if (isClient) {
+    if (typeof window !== 'undefined') {
       const plansSection = document.querySelector('#plans');
       if (plansSection) {
         plansSection.scrollIntoView({ behavior: 'smooth' });
