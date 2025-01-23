@@ -15,11 +15,15 @@ import { toast } from 'sonner';
 import { optimizeImage } from '@/lib/imageOptimizer';
 import { supabase } from '@/lib/supabase';
 import slugify from 'slugify';
-import Lottie from 'lottie-react';
+import dynamic from 'next/dynamic';
 import heartAnimation from '../../../public/heart.json';
 import uploadAnimation from '../../../public/upload.json';
 import musicAnimation from '../../../public/music.json';
 import brushAnimation from '../../../public/brush.json';
+
+const Lottie = dynamic(() => import('lottie-react'), {
+  ssr: false,
+});
 
 function CreateContent() {
   const router = useRouter();

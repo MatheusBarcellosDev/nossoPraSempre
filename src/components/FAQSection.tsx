@@ -2,9 +2,13 @@
 
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import Lottie from 'lottie-react';
+import dynamic from 'next/dynamic';
 import qrCodeAnimation from '../../public/qr-code.json';
 import padlockAnimation from '../../public/padlock.json';
+
+const Lottie = dynamic(() => import('lottie-react'), {
+  ssr: false,
+});
 
 interface FAQItem {
   question: string;
