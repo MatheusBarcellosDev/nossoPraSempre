@@ -15,8 +15,8 @@ export default function Home() {
       <HeroSection />
       <HowItWorks />
       <SpecialFeatures />
-      {/* <PlansSection /> */}
-      <FAQSection />
+      <PlansSection />
+      {/*<FAQSection />*/}
       <Footer />
     </main>
   );
