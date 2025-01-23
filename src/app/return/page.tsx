@@ -62,9 +62,9 @@ function ReturnContent() {
         const { slug } = await response.json();
         setIsSuccess(true);
 
-        // Aguarda um pouco antes de redirecionar
+        // Redirecionar para a página de sucesso em vez da página do casal
         setTimeout(() => {
-          router.push(`/${slug}`);
+          router.push(`/success?slug=${slug}`);
         }, 3000);
       } catch (error) {
         console.error('Error:', error);

@@ -3,6 +3,7 @@ import { TemplateRomantico } from './romantico';
 import { TemplateMinimalista } from './minimalista';
 import { YouTubePlayer } from '@/components/ui/youtube-player';
 import { Music } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 export type TemplateType = 'romantico' | 'moderno' | 'minimalista';
 
@@ -29,13 +30,15 @@ export function BaseTemplate({
   children,
   musica,
   variant = 'light',
+  className,
 }: {
   children: React.ReactNode;
   musica?: string;
   variant?: 'light' | 'dark';
+  className?: string;
 }) {
   return (
-    <div>
+    <div className={cn('relative min-h-screen bg-white', className)}>
       {children}
 
       {/* Música do Casal - comum a todos os templates */}
@@ -64,6 +67,12 @@ export function BaseTemplate({
               <YouTubePlayer url={musica} />
             </div>
           </div>
+        </div>
+      )}
+
+      {musica && (
+        <div className="fixed bottom-4 right-4 z-50">
+          <YouTubePlayer url={musica} />
         </div>
       )}
     </div>

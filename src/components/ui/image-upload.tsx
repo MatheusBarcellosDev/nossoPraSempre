@@ -4,6 +4,7 @@ import { Upload, X } from 'lucide-react';
 import Image from 'next/image';
 import { toast } from 'react-hot-toast';
 import { useState } from 'react';
+import { cn } from '@/lib/utils';
 
 interface ImageUploadProps {
   onUpload: (urls: string[]) => void;
@@ -138,9 +139,10 @@ export function ImageUpload({
         ))}
         {value.length < maxFiles && (
           <label
-            className={`relative aspect-square rounded-lg border-2 border-dashed border-romantic-200 hover:border-romantic-300 transition-colors flex flex-col items-center justify-center gap-2 bg-romantic-50/50 hover:bg-romantic-50 text-romantic-600 hover:text-romantic-700 ${
+            className={cn(
+              'relative aspect-square rounded-lg border-2 border-dashed border-romantic-200 hover:border-romantic-300 transition-colors flex flex-col items-center justify-center gap-2 bg-romantic-50/50 hover:bg-romantic-50 text-romantic-600 hover:text-romantic-700',
               isProcessing ? 'opacity-50 cursor-not-allowed' : 'cursor-pointer'
-            }`}
+            )}
           >
             <input
               type="file"

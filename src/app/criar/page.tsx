@@ -15,6 +15,11 @@ import { toast } from 'sonner';
 import { optimizeImage } from '@/lib/imageOptimizer';
 import { supabase } from '@/lib/supabase';
 import slugify from 'slugify';
+import Lottie from 'lottie-react';
+import heartAnimation from '../../../public/heart.json';
+import uploadAnimation from '../../../public/upload.json';
+import musicAnimation from '../../../public/music.json';
+import brushAnimation from '../../../public/brush.json';
 
 function CreateContent() {
   const router = useRouter();
@@ -160,10 +165,19 @@ function CreateContent() {
           <div className="space-y-8">
             <Card className="bg-white/80 backdrop-blur">
               <CardContent className="p-6 space-y-6">
-                <h2 className="text-2xl font-semibold text-romantic-800 flex items-center gap-2">
-                  <Heart className="w-6 h-6 text-romantic-500" />
-                  Informações do Casal
-                </h2>
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-8 h-8">
+                    <Lottie
+                      animationData={heartAnimation}
+                      loop={true}
+                      autoplay={true}
+                      className="w-full h-full"
+                    />
+                  </div>
+                  <h2 className="text-2xl font-semibold text-romantic-800">
+                    Informações do Casal
+                  </h2>
+                </div>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -317,10 +331,19 @@ function CreateContent() {
 
             <Card className="bg-white/80 backdrop-blur">
               <CardContent className="p-6 space-y-6">
-                <h2 className="text-2xl font-semibold text-romantic-800 flex items-center gap-2">
-                  <Upload className="w-6 h-6 text-romantic-500" />
-                  Fotos Especiais ({formData.fotos.length}/{plan.maxPhotos})
-                </h2>
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-8 h-8">
+                    <Lottie
+                      animationData={uploadAnimation}
+                      loop={true}
+                      autoplay={true}
+                      className="w-full h-full"
+                    />
+                  </div>
+                  <h2 className="text-2xl font-semibold text-romantic-800">
+                    Fotos Especiais ({formData.fotos.length}/{plan.maxPhotos})
+                  </h2>
+                </div>
 
                 <ImageUpload
                   onUpload={handleImageUpload}
@@ -332,10 +355,19 @@ function CreateContent() {
 
             <Card className="bg-white/80 backdrop-blur">
               <CardContent className="p-6 space-y-6">
-                <h2 className="text-2xl font-semibold text-romantic-800 flex items-center gap-2">
-                  <Music className="w-6 h-6 text-romantic-500" />
-                  Música do Casal
-                </h2>
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-8 h-8">
+                    <Lottie
+                      animationData={musicAnimation}
+                      loop={true}
+                      autoplay={true}
+                      className="w-full h-full"
+                    />
+                  </div>
+                  <h2 className="text-2xl font-semibold text-romantic-800">
+                    Música do Casal
+                  </h2>
+                </div>
 
                 <div className="space-y-4">
                   <div className="space-y-2">
@@ -359,9 +391,19 @@ function CreateContent() {
             {/* Seleção de Template */}
             <Card className="bg-white/80 backdrop-blur">
               <CardContent className="p-6 space-y-6">
-                <h2 className="text-2xl font-semibold text-romantic-800">
-                  Escolha o Template
-                </h2>
+                <div className="flex items-center gap-2 mb-6">
+                  <div className="w-8 h-8">
+                    <Lottie
+                      animationData={brushAnimation}
+                      loop={true}
+                      autoplay={true}
+                      className="w-full h-full"
+                    />
+                  </div>
+                  <h2 className="text-2xl font-semibold text-romantic-800">
+                    Escolha o Template
+                  </h2>
+                </div>
 
                 <div className="grid grid-cols-3 gap-4">
                   {Object.entries(templates).map(([key, _]) => (

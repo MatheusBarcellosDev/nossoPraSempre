@@ -2,7 +2,7 @@
 
 import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
-import { Share2, Download, Copy, ExternalLink } from 'lucide-react';
+import { Share2, Download, Copy, ExternalLink, Printer } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { Suspense } from 'react';
@@ -32,6 +32,77 @@ function SuccessContent() {
 
   const handleViewPage = () => {
     window.open(pageUrl, '_blank');
+  };
+
+  const handlePrintQRCode = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    const html = `
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>QR Code - O Nosso Pra Sempre</title>
+          <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
+          <style>
+            body {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              min-height: 100vh;
+              margin: 0;
+              padding: 20px;
+              font-family: system-ui, -apple-system, sans-serif;
+            }
+            .container {
+              text-align: center;
+            }
+            h1 {
+              color: #666;
+              font-weight: 300;
+              margin-bottom: 2rem;
+            }
+            .qr-code {
+              padding: 20px;
+              background: white;
+              border-radius: 12px;
+              box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
+            }
+            p {
+              color: #666;
+              margin-top: 1rem;
+            }
+          </style>
+        </head>
+        <body>
+          <div class="container">
+            <h1>O Nosso Pra Sempre</h1>
+            <div class="qr-code">
+              <div id="qr"></div>
+            </div>
+            <p>Escaneie para acessar a página</p>
+          </div>
+          <script>
+            window.onload = function() {
+              new QRCode(document.getElementById("qr"), {
+                text: "${pageUrl}",
+                width: 200,
+                height: 200
+              });
+              
+              setTimeout(() => {
+                window.print();
+                window.close();
+              }, 200);
+            };
+          </script>
+        </body>
+      </html>
+    `;
+
+    printWindow.document.write(html);
+    printWindow.document.close();
   };
 
   if (!slug) {
@@ -80,10 +151,19 @@ function SuccessContent() {
               </Button>
             </div>
 
-            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
               <Button className="w-full" onClick={handleShare}>
                 <Share2 className="w-4 h-4 mr-2" />
                 Compartilhar
+              </Button>
+
+              <Button
+                variant="outline"
+                className="w-full"
+                onClick={handlePrintQRCode}
+              >
+                <Printer className="w-4 h-4 mr-2" />
+                Imprimir QR Code
               </Button>
 
               <Button
