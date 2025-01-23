@@ -1,11 +1,18 @@
 'use client';
 
-import { QRCodeSVG } from 'qrcode.react';
+import dynamic from 'next/dynamic';
 import { Button } from '@/components/ui/button';
 import { Share2, Copy, ExternalLink, Printer } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { Suspense } from 'react';
+
+const QRCodeSVG = dynamic(
+  () => import('qrcode.react').then((mod) => mod.QRCodeSVG),
+  {
+    ssr: false,
+  }
+);
 
 function SuccessContent() {
   const searchParams = useSearchParams();
@@ -117,7 +124,13 @@ function SuccessContent() {
           </div>
 
           <div className="flex justify-center mb-8">
-            <QRCodeSVG value={pageUrl} size={200} level="H" />
+            <Suspense
+              fallback={
+                <div className="w-[200px] h-[200px] bg-romantic-100 animate-pulse rounded-lg" />
+              }
+            >
+              <QRCodeSVG value={pageUrl} size={200} level="H" />
+            </Suspense>
           </div>
 
           <div className="space-y-4">

@@ -1,5 +1,6 @@
 'use client';
 
+import dynamic from 'next/dynamic';
 import { useEffect } from 'react';
 
 interface QRCodePrintProps {
@@ -8,11 +9,11 @@ interface QRCodePrintProps {
   onLoad?: () => void;
 }
 
-export function QRCodePrint({
+const QRCodePrintInner = ({
   url,
   title = 'O Nosso Pra Sempre',
   onLoad,
-}: QRCodePrintProps) {
+}: QRCodePrintProps) => {
   useEffect(() => {
     // Carrega o script do QRCode
     const script = document.createElement('script');
@@ -22,25 +23,33 @@ export function QRCodePrint({
 
     script.onload = () => {
       // Cria o QR Code
-      new (window as any).QRCode(document.getElementById('qr'), {
-        text: url,
-        width: 200,
-        height: 200,
-        colorDark: '#000000',
-        colorLight: '#ffffff',
-        correctLevel: (window as any).QRCode.CorrectLevel.H,
-      });
+      const qrElement = document.getElementById('qr');
+      if (qrElement && (window as any).QRCode) {
+        new (window as any).QRCode(qrElement, {
+          text: url,
+          width: 200,
+          height: 200,
+          colorDark: '#000000',
+          colorLight: '#ffffff',
+          correctLevel: (window as any).QRCode.CorrectLevel.H,
+        });
 
-      // Chama o callback de onLoad se existir
-      if (onLoad) {
-        onLoad();
+        // Chama o callback de onLoad se existir
+        if (onLoad) {
+          onLoad();
+        }
       }
     };
 
     document.body.appendChild(script);
 
     return () => {
-      document.body.removeChild(script);
+      const existingScript = document.querySelector(
+        `script[src="${script.src}"]`
+      );
+      if (existingScript) {
+        document.body.removeChild(existingScript);
+      }
     };
   }, [url, onLoad]);
 
@@ -76,4 +85,8 @@ export function QRCodePrint({
       <p>Escaneie para acessar a página</p>
     </div>
   );
-}
+};
+
+export const QRCodePrint = dynamic(() => Promise.resolve(QRCodePrintInner), {
+  ssr: false,
+});

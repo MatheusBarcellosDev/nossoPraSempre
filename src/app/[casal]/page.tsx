@@ -2,11 +2,18 @@
 
 import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
+import dynamic from 'next/dynamic';
 import { templates } from '@/components/templates';
-import { QRCodeCanvas } from 'qrcode.react';
 import { Share2, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { PasswordCheck } from '@/components/PasswordCheck';
+
+const QRCodeCanvas = dynamic(
+  () => import('qrcode.react').then((mod) => mod.QRCodeCanvas),
+  {
+    ssr: false,
+  }
+);
 
 interface PageData {
   nome1: string;
@@ -26,8 +33,8 @@ export default function Page() {
   const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
   const pathname = usePathname();
-
-  const fullUrl = typeof window !== 'undefined' ? window.location.href : '';
+  const fullUrl =
+    typeof window !== 'undefined' ? `${window.location.origin}${pathname}` : '';
 
   useEffect(() => {
     const fetchData = async () => {

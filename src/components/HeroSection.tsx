@@ -5,8 +5,10 @@ import { ArrowDown } from 'lucide-react';
 
 export default function HeroSection() {
   const scrollToPlans = () => {
-    const plansSection = document.querySelector('#plans');
-    plansSection?.scrollIntoView({ behavior: 'smooth' });
+    const plansSection = document.getElementById('plans');
+    if (plansSection) {
+      plansSection.scrollIntoView({ behavior: 'smooth' });
+    }
   };
 
   return (
