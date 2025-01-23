@@ -1,31 +1,23 @@
 'use client';
 
 import dynamic from 'next/dynamic';
-import { useLottie, LottieOptions } from 'lottie-react';
 
 interface LottieAnimationProps {
   animationData: any;
   className?: string;
 }
 
-function LottieAnimationInner({
+const Lottie = dynamic(() => import('lottie-react'), {
+  ssr: false,
+});
+
+const LottieAnimation: React.FC<LottieAnimationProps> = ({
   animationData,
   className,
-}: LottieAnimationProps) {
-  const options: LottieOptions = {
-    animationData: animationData,
-    loop: true,
-    autoplay: true,
-  };
+}) => {
+  return (
+    <Lottie animationData={animationData} loop autoplay className={className} />
+  );
+};
 
-  const { View } = useLottie(options);
-
-  return <div className={className}>{View}</div>;
-}
-
-export const LottieAnimation = dynamic(
-  () => Promise.resolve(LottieAnimationInner),
-  {
-    ssr: false,
-  }
-);
+export default LottieAnimation;

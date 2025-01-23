@@ -1,6 +1,6 @@
 'use client';
 
-import { LottieAnimation } from '@/components/LottieAnimation';
+import LottieAnimation from '@/components/LottieAnimation';
 import emailAnimation from '../../public/email-file.json';
 
 export function Footer() {

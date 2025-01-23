@@ -2,7 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
-import { LottieAnimation } from '@/components/LottieAnimation';
+import LottieAnimation from '@/components/LottieAnimation';
 import qrCodeAnimation from '../../public/qr-code.json';
 import padlockAnimation from '../../public/padlock.json';
 

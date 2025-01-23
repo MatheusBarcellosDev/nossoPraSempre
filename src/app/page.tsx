@@ -13,11 +13,11 @@ export default function Home() {
   return (
     <main className="min-h-screen bg-gradient-to-b from-gray-50 via-gray-100 to-gray-200 pb-0 pt-8 px-8">
       <HeroSection />
-      {/* <HowItWorks /> */}
-      {/* <SpecialFeatures /> */}
-      {/* <PlansSection /> */}
-      {/* <FAQSection /> */}
-      {/* <Footer /> */}
+      <HowItWorks />
+      <SpecialFeatures />
+      <PlansSection />
+      <FAQSection />
+      <Footer />
     </main>
   );
 }

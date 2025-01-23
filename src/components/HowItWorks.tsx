@@ -6,7 +6,7 @@ import {
   CardHeader,
   CardTitle,
 } from '@/components/ui/card';
-import { LottieAnimation } from '@/components/LottieAnimation';
+import LottieAnimation from '@/components/LottieAnimation';
 import heartAnimation from '../../public/heart.json';
 import walletAnimation from '../../public/wallet.json';
 import shareAnimation from '../../public/share.json';
