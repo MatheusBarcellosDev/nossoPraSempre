@@ -23,6 +23,16 @@ export default function RootLayout({
       <head>
         <link rel="icon" type="image/svg+xml" href="/favicon.svg" />
         <link rel="alternate icon" href="/favicon.ico" />
+        <link
+          rel="icon"
+          type="image/png"
+          sizes="48x48"
+          href="/favicon-48x48.png"
+        />
+        <meta
+          name="google-site-verification"
+          content="6jHrU9skNVLFmFeLhTdCsebqC8RPoA-fOR1z"
+        />
       </head>
       <body className={inter.className}>
         <PlanProvider>
