@@ -5,10 +5,7 @@ import { SpecialFeatures } from '@/components/SpecialFeatures';
 import { Footer } from '@/components/Footer';
 import { PlansSection } from '@/components/PlansSection';
 import { HomeShowcase } from '@/components/HomeShowcase';
-
-const HeroSection = dynamic(() => import('../components/HeroSection'), {
-  ssr: false,
-});
+import { HeroSection } from '@/components/HeroSection';
 
 export default function Home() {
   return (

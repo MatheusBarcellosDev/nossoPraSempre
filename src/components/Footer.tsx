@@ -5,8 +5,8 @@ import emailAnimation from '../../public/email-file.json';
 
 export function Footer() {
   return (
-    <footer className="bg-romantic-800 text-romantic-100 py-12 -mx-8">
-      <div className="max-w-6xl mx-auto px-8">
+    <footer className="bg-romantic-900 text-white py-8 md:py-12 px-4 md:px-8">
+      <div className="max-w-6xl mx-auto">
         <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
           <div>
             <h3 className="text-2xl font-semibold mb-4">O Nosso Pra Sempre</h3>
