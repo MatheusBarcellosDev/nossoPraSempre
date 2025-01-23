@@ -1,3 +1,5 @@
+'use client';
+
 import HeroSection from '@/components/HeroSection';
 import { PlansSection } from '@/components/PlansSection';
 import { FAQSection } from '@/components/FAQSection';

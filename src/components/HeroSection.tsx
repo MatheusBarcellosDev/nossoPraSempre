@@ -2,10 +2,13 @@
 
 import { Button } from '@/components/ui/button';
 import { ArrowDown } from 'lucide-react';
+import { useEffect, useRef } from 'react';
 
 export default function HeroSection() {
+  const plansRef = useRef<HTMLDivElement>(null);
+
   const scrollToPlans = () => {
-    const plansSection = document.getElementById('plans');
+    const plansSection = document.querySelector('#plans');
     if (plansSection) {
       plansSection.scrollIntoView({ behavior: 'smooth' });
     }
