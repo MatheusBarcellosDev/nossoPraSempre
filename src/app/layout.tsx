@@ -11,6 +11,14 @@ export const metadata: Metadata = {
   title: 'O Nosso Pra Sempre',
   description:
     'Crie uma página única e especial para celebrar sua história de amor.',
+  icons: {
+    icon: [
+      { url: '/favicon.ico', sizes: 'any' },
+      { url: '/favicon-48x48.png', type: 'image/png', sizes: '48x48' },
+    ],
+    shortcut: '/favicon.ico',
+    apple: '/apple-touch-icon.png',
+  },
 };
 
 export default function RootLayout({
