@@ -40,14 +40,16 @@ export function YouTubePlayer({ url, className = '' }: YouTubePlayerProps) {
   // Configuração inicial com todos os parâmetros necessários
   const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&playsinline=1&controls=1&enablejsapi=1&origin=${encodeURIComponent(
     window.location.origin
-  )}&widget_referrer=${encodeURIComponent(window.location.href)}`;
+  )}&widget_referrer=${encodeURIComponent(
+    window.location.href
+  )}&picture-in-picture=0&pip=0`;
 
   return (
     <div className={`aspect-video ${className}`}>
       <iframe
         ref={iframeRef}
         src={embedUrl}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; microphone; autoplay"
+        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; microphone; autoplay"
         allowFullScreen
         className="w-full h-full rounded-lg"
       />

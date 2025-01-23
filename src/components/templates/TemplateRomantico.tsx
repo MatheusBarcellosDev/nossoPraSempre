@@ -62,6 +62,8 @@ export default function TemplateRomantico({
                   <video
                     src={video}
                     controls
+                    disablePictureInPicture
+                    playsInline
                     className="w-full h-full object-cover rounded"
                   />
                 </div>

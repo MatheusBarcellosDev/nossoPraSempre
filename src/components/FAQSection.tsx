@@ -2,6 +2,7 @@
 
 import { useState } from 'react';
 import { ChevronDown } from 'lucide-react';
+import { motion, AnimatePresence } from 'framer-motion';
 import LottieAnimation from '@/components/LottieAnimation';
 import qrCodeAnimation from '../../public/qr-code.json';
 import padlockAnimation from '../../public/padlock.json';
@@ -46,49 +47,74 @@ export function FAQSection() {
   const [openIndex, setOpenIndex] = useState<number | null>(null);
 
   return (
-    <section className="max-w-3xl mx-auto px-4 mt-24 mb-24">
-      <h2 className="text-3xl font-semibold text-romantic-800 text-center mb-12">
-        Perguntas Frequentes
-      </h2>
-      <div className="space-y-4">
-        {faqItems.map((item, index) => (
-          <div
-            key={index}
-            className="bg-white rounded-lg shadow-sm border border-romantic-100"
-          >
-            <div className="p-4">
-              <div
-                className="flex items-center justify-between cursor-pointer"
+    <section className="py-24 md:py-32 mt-16 md:mt-24">
+      <div className="max-w-4xl mx-auto px-4 md:px-8">
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+          className="text-center mb-16"
+        >
+          <h2 className="text-3xl font-semibold text-romantic-800">
+            Perguntas Frequentes
+          </h2>
+          <p className="text-romantic-600 mt-4">
+            Tire suas dúvidas sobre o O Nosso Pra Sempre
+          </p>
+        </motion.div>
+
+        <div className="space-y-4">
+          {faqItems.map((item, index) => (
+            <motion.div
+              key={index}
+              initial={{ opacity: 0, y: 20 }}
+              whileInView={{ opacity: 1, y: 0 }}
+              viewport={{ once: true }}
+              transition={{ duration: 0.8, delay: index * 0.1 }}
+            >
+              <button
                 onClick={() => setOpenIndex(openIndex === index ? null : index)}
+                className="w-full bg-white hover:bg-romantic-50 p-6 rounded-lg shadow-sm border border-romantic-200 transition-colors duration-200"
               >
-                <h3 className="text-lg font-medium text-romantic-800">
-                  {item.question}
-                </h3>
-                {item.icon ? (
-                  <div className="w-8 h-8">
-                    <LottieAnimation
-                      animationData={item.icon}
-                      className="w-full h-full"
+                <div className="flex justify-between items-center gap-4">
+                  <h3 className="text-left text-lg font-medium text-romantic-800">
+                    {item.question}
+                  </h3>
+                  {item.icon ? (
+                    <div className="w-8 h-8">
+                      <LottieAnimation
+                        animationData={item.icon}
+                        className="w-full h-full"
+                      />
+                    </div>
+                  ) : (
+                    <ChevronDown
+                      className={`w-5 h-5 text-romantic-500 transition-transform duration-200 ${
+                        openIndex === index ? 'rotate-180' : ''
+                      }`}
                     />
-                  </div>
-                ) : (
-                  <ChevronDown
-                    className={`w-5 h-5 text-romantic-500 transition-transform duration-300 ${
-                      openIndex === index ? 'rotate-180' : ''
-                    }`}
-                  />
-                )}
-              </div>
-              <div
-                className={`mt-4 text-romantic-600 overflow-hidden transition-all duration-300 ${
-                  openIndex === index ? 'max-h-96' : 'max-h-0 mt-0'
-                }`}
-              >
-                {item.answer}
-              </div>
-            </div>
-          </div>
-        ))}
+                  )}
+                </div>
+                <AnimatePresence>
+                  {openIndex === index && (
+                    <motion.div
+                      initial={{ height: 0, opacity: 0 }}
+                      animate={{ height: 'auto', opacity: 1 }}
+                      exit={{ height: 0, opacity: 0 }}
+                      transition={{ duration: 0.2 }}
+                      className="overflow-hidden"
+                    >
+                      <p className="mt-4 text-romantic-600 text-left">
+                        {item.answer}
+                      </p>
+                    </motion.div>
+                  )}
+                </AnimatePresence>
+              </button>
+            </motion.div>
+          ))}
+        </div>
       </div>
     </section>
   );
