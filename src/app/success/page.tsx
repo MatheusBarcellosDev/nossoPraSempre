@@ -2,7 +2,7 @@
 
 import { QRCodeSVG } from 'qrcode.react';
 import { Button } from '@/components/ui/button';
-import { Share2, Download, Copy, ExternalLink, Printer } from 'lucide-react';
+import { Share2, Copy, ExternalLink, Printer } from 'lucide-react';
 import { useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { Suspense } from 'react';
@@ -18,6 +18,7 @@ function SuccessContent() {
       await navigator.clipboard.writeText(pageUrl);
       toast.success('Link copiado!');
     } catch (error) {
+      console.error('Error copying link:', error);
       toast.error('Erro ao copiar link');
     }
   };
@@ -25,7 +26,9 @@ function SuccessContent() {
   const handleShare = () => {
     window.open(
       `https://wa.me/?text=${encodeURIComponent(
-        `Veja nossa página especial: ${pageUrl}`
+        `Oi! Acabei de criar nossa página especial no O Nosso Pra Sempre 💕\n\n` +
+          `Criei um espaço único para guardar nossas memórias e momentos especiais 💝\n\n` +
+          `Venha conhecer nossa história:\n${pageUrl}`
       )}`
     );
   };
@@ -38,12 +41,13 @@ function SuccessContent() {
     const printWindow = window.open('', '_blank');
     if (!printWindow) return;
 
-    const html = `
+    const fullUrl = `${window.location.origin}/${slug}`;
+
+    printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
           <title>QR Code - O Nosso Pra Sempre</title>
-          <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
           <style>
             body {
               display: flex;
@@ -55,54 +59,37 @@ function SuccessContent() {
               padding: 20px;
               font-family: system-ui, -apple-system, sans-serif;
             }
-            .container {
+            h1 {
+              color: #1f2937;
+              font-size: 24px;
+              margin-bottom: 24px;
               text-align: center;
             }
-            h1 {
-              color: #666;
-              font-weight: 300;
-              margin-bottom: 2rem;
-            }
-            .qr-code {
-              padding: 20px;
-              background: white;
-              border-radius: 12px;
-              box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            }
             p {
-              color: #666;
-              margin-top: 1rem;
+              color: #6b7280;
+              margin-top: 16px;
+              text-align: center;
             }
           </style>
         </head>
         <body>
-          <div class="container">
-            <h1>O Nosso Pra Sempre</h1>
-            <div class="qr-code">
-              <div id="qr"></div>
-            </div>
-            <p>Escaneie para acessar a página</p>
-          </div>
+          <h1>Sua Página no O Nosso Pra Sempre</h1>
+          <div id="qr-canvas"></div>
+          <p>Escaneie para acessar a página</p>
+          <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
           <script>
-            window.onload = function() {
-              new QRCode(document.getElementById("qr"), {
-                text: "${pageUrl}",
-                width: 200,
-                height: 200
-              });
-              
-              setTimeout(() => {
-                window.print();
-                window.close();
-              }, 200);
-            };
+            var qr = qrcode(0, 'H');
+            qr.addData('${fullUrl}');
+            qr.make();
+            document.getElementById('qr-canvas').innerHTML = qr.createImgTag(8);
+            setTimeout(() => {
+              window.print();
+              window.close();
+            }, 500);
           </script>
         </body>
       </html>
-    `;
-
-    printWindow.document.write(html);
-    printWindow.document.close();
+    `);
   };
 
   if (!slug) {
@@ -117,22 +104,20 @@ function SuccessContent() {
   }
 
   return (
-    <div className="min-h-screen bg-gradient-to-b from-pink-50 to-white">
-      <div className="container mx-auto px-4 py-16">
-        <div className="max-w-2xl mx-auto bg-white rounded-2xl shadow-lg p-8">
+    <div className="min-h-screen bg-romantic-50/50">
+      <div className="container max-w-2xl mx-auto py-12 px-4">
+        <div className="bg-white rounded-2xl shadow-xl p-8">
           <div className="text-center mb-8">
-            <h1 className="text-3xl font-bold text-gray-900 mb-2">
-              Página criada com sucesso! 🎉
+            <h1 className="text-3xl font-bold text-romantic-800 mb-4">
+              Página Criada com Sucesso!
             </h1>
-            <p className="text-gray-600">
-              Compartilhe essa página especial com quem você ama
+            <p className="text-romantic-600">
+              Sua página está pronta para ser compartilhada com quem você ama.
             </p>
           </div>
 
           <div className="flex justify-center mb-8">
-            <div className="p-4 bg-white rounded-xl shadow-md">
-              <QRCodeSVG value={pageUrl} size={200} />
-            </div>
+            <QRCodeSVG value={pageUrl} size={200} level="H" />
           </div>
 
           <div className="space-y-4">

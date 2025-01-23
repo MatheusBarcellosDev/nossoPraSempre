@@ -7,10 +7,14 @@ import { Button } from '@/components/ui/button';
 import { Lock } from 'lucide-react';
 
 interface PasswordCheckProps {
-  onPasswordSubmit: (password: string) => Promise<boolean>;
+  onSuccess: () => void;
+  correctPassword: string;
 }
 
-export function PasswordCheck({ onPasswordSubmit }: PasswordCheckProps) {
+export function PasswordCheck({
+  onSuccess,
+  correctPassword,
+}: PasswordCheckProps) {
   const [password, setPassword] = useState('');
   const [error, setError] = useState(false);
   const [isLoading, setIsLoading] = useState(false);
@@ -20,8 +24,9 @@ export function PasswordCheck({ onPasswordSubmit }: PasswordCheckProps) {
     setIsLoading(true);
     setError(false);
 
-    const isValid = await onPasswordSubmit(password);
-    if (!isValid) {
+    if (password === correctPassword) {
+      onSuccess();
+    } else {
       setError(true);
     }
     setIsLoading(false);

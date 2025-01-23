@@ -22,74 +22,147 @@ interface PageData {
 }
 
 export default function Page() {
-  const pathname = usePathname();
   const [pageData, setPageData] = useState<PageData | null>(null);
-  const [loading, setLoading] = useState(true);
+  const [isLoading, setIsLoading] = useState(true);
   const [isAuthenticated, setIsAuthenticated] = useState(false);
+  const pathname = usePathname();
+
+  const fullUrl = typeof window !== 'undefined' ? window.location.href : '';
 
   useEffect(() => {
     const fetchData = async () => {
       try {
-        const slug = pathname.replace('/', '');
-        const response = await fetch(`/api/pages?slug=${slug}`);
+        const response = await fetch(`/api/pages${pathname}`);
         if (!response.ok) throw new Error('Página não encontrada');
         const data = await response.json();
         setPageData(data);
+        setIsAuthenticated(!data.isPrivate);
       } catch (error) {
-        console.error(error);
-        toast.error('Erro ao carregar a página');
+        console.error('Error loading page:', error);
+        toast.error('Erro ao carregar página');
       } finally {
-        setLoading(false);
+        setIsLoading(false);
       }
     };
 
     fetchData();
   }, [pathname]);
 
-  const handlePasswordSubmit = async (password: string) => {
-    try {
-      const response = await fetch('/api/verify-password', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({
-          slug: pathname.replace('/', ''),
-          password,
-        }),
-      });
-
-      if (response.ok) {
-        setIsAuthenticated(true);
-        return true;
-      }
-      return false;
-    } catch (error) {
-      return false;
-    }
-  };
-
-  if (loading) {
+  if (isLoading) {
     return (
       <div className="min-h-screen flex items-center justify-center">
-        <div className="text-center space-y-4">
-          <div className="w-16 h-16 border-4 border-romantic-200 border-t-romantic-500 rounded-full animate-spin mx-auto" />
-          <p className="text-romantic-600">Carregando...</p>
-        </div>
+        <div className="animate-spin rounded-full h-8 w-8 border-t-2 border-b-2 border-romantic-500"></div>
       </div>
     );
   }
 
   if (!pageData) {
-    return <div>Página não encontrada</div>;
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-semibold text-romantic-800 mb-2">
+            Página não encontrada
+          </h1>
+          <p className="text-romantic-600">
+            O link que você acessou não existe ou expirou
+          </p>
+        </div>
+      </div>
+    );
+  }
+
+  if (!pageData.isPago) {
+    return (
+      <div className="min-h-screen flex items-center justify-center">
+        <div className="text-center">
+          <h1 className="text-2xl font-semibold text-romantic-800 mb-2">
+            Página em processamento
+          </h1>
+          <p className="text-romantic-600">
+            Aguarde enquanto processamos seu pagamento
+          </p>
+        </div>
+      </div>
+    );
   }
 
   if (pageData.isPrivate && !isAuthenticated) {
-    return <PasswordCheck onPasswordSubmit={handlePasswordSubmit} />;
+    return (
+      <PasswordCheck
+        onSuccess={() => setIsAuthenticated(true)}
+        correctPassword={pageData.password || ''}
+      />
+    );
   }
 
   const Template = templates[pageData.template];
-  const fullUrl = `${window.location.origin}${pathname}`;
+
+  const handleShare = async () => {
+    try {
+      const text =
+        `💑 Queremos compartilhar nossa história de amor com você! ✨\n\n` +
+        `${pageData.nome1} & ${pageData.nome2} criaram uma página especial para eternizar momentos únicos.\n\n` +
+        `💝 Faça parte dessa história de amor:\n${fullUrl}`;
+
+      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
+      window.open(whatsappUrl, '_blank');
+    } catch {
+      toast.error('Erro ao compartilhar');
+    }
+  };
+
+  const handlePrint = () => {
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
+
+    printWindow.document.write(`
+      <!DOCTYPE html>
+      <html>
+        <head>
+          <title>QR Code - ${pageData.nome1} & ${pageData.nome2}</title>
+          <style>
+            body {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              justify-content: center;
+              min-height: 100vh;
+              margin: 0;
+              padding: 20px;
+              font-family: system-ui, -apple-system, sans-serif;
+            }
+            h1 {
+              color: #1f2937;
+              font-size: 24px;
+              margin-bottom: 24px;
+              text-align: center;
+            }
+            p {
+              color: #6b7280;
+              margin-top: 16px;
+              text-align: center;
+            }
+          </style>
+        </head>
+        <body>
+          <h1>${pageData.nome1} & ${pageData.nome2}</h1>
+          <div id="qr-canvas"></div>
+          <p>Escaneie para acessar nossa página</p>
+          <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
+          <script>
+            var qr = qrcode(0, 'H');
+            qr.addData('${fullUrl}');
+            qr.make();
+            document.getElementById('qr-canvas').innerHTML = qr.createImgTag(8);
+            setTimeout(() => {
+              window.print();
+              window.close();
+            }, 500);
+          </script>
+        </body>
+      </html>
+    `);
+  };
 
   const jsonLd = {
     '@context': 'https://schema.org',
@@ -108,89 +181,9 @@ export default function Page() {
       name: 'O Nosso Pra Sempre',
       logo: {
         '@type': 'ImageObject',
-        url: `${window.location.origin}/favicon.svg`,
+        url: `${process.env.NEXT_PUBLIC_URL}/logo.png`,
       },
     },
-  };
-
-  const handleShare = async () => {
-    try {
-      const text =
-        `Venha conhecer nossa página especial no O Nosso Pra Sempre! 💑\n\n` +
-        `${pageData.nome1} e ${pageData.nome2} compartilharam sua história de amor.\n` +
-        `Acesse a página diretamente pelo link ou escaneie o QR Code:\n${fullUrl}`;
-
-      const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
-      window.open(whatsappUrl, '_blank');
-    } catch {
-      toast.error('Erro ao compartilhar');
-    }
-  };
-
-  const handlePrint = () => {
-    const printWindow = window.open('', '_blank');
-    if (!printWindow) return;
-
-    const html = `
-      <!DOCTYPE html>
-      <html>
-        <head>
-          <title>QR Code - ${pageData.nome1} & ${pageData.nome2}</title>
-          <script src="https://cdn.rawgit.com/davidshimjs/qrcodejs/gh-pages/qrcode.min.js"></script>
-          <style>
-            body {
-              display: flex;
-              flex-direction: column;
-              align-items: center;
-              justify-content: center;
-              min-height: 100vh;
-              margin: 0;
-              padding: 20px;
-              font-family: system-ui, -apple-system, sans-serif;
-            }
-            .container {
-              text-align: center;
-            }
-            h1 {
-              color: #666;
-              font-weight: 300;
-              margin-bottom: 2rem;
-            }
-            .qr-code {
-              padding: 20px;
-              background: white;
-              border-radius: 12px;
-              box-shadow: 0 4px 6px -1px rgb(0 0 0 / 0.1);
-            }
-          </style>
-        </head>
-        <body>
-          <div class="container">
-            <h1>${pageData.nome1} & ${pageData.nome2}</h1>
-            <div class="qr-code">
-              <div id="qr"></div>
-            </div>
-          </div>
-          <script>
-            window.onload = function() {
-              new QRCode(document.getElementById("qr"), {
-                text: "${fullUrl}",
-                width: 200,
-                height: 200
-              });
-              
-              setTimeout(() => {
-                window.print();
-                window.close();
-              }, 200);
-            };
-          </script>
-        </body>
-      </html>
-    `;
-
-    printWindow.document.write(html);
-    printWindow.document.close();
   };
 
   return (

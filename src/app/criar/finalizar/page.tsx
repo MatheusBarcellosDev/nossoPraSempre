@@ -4,10 +4,10 @@ import { useEffect, useState, Suspense } from 'react';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { QRCodeCanvas } from 'qrcode.react';
 import { Share2, Copy, Printer } from 'lucide-react';
 import { toast } from 'sonner';
 import { templates, TemplateType } from '@/components/templates';
+import { QRCodeCanvas } from 'qrcode.react';
 
 const PLANS = {
   basic: {
@@ -40,8 +40,8 @@ interface PageData {
 }
 
 function FinalizarContent() {
-  const [isLoading, setIsLoading] = useState(true);
   const [pageData, setPageData] = useState<PageData | null>(null);
+  const [isLoading, setIsLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState<number>(30 * 60); // 30 minutos em segundos
   const router = useRouter();
   const searchParams = useSearchParams();
@@ -146,76 +146,58 @@ function FinalizarContent() {
   };
 
   const handlePrintQRCode = () => {
-    const qrWindow = window.open('', '_blank');
-    if (!qrWindow) return;
+    const printWindow = window.open('', '_blank');
+    if (!printWindow) return;
 
     const fullUrl = `${window.location.origin}/${pageData?.slug}`;
-    const qrCodeHtml = `
-      <div style="display: flex; justify-content: center;">
-        <canvas id="qr-canvas"></canvas>
-      </div>
-    `;
 
-    const html = `
+    printWindow.document.write(`
+      <!DOCTYPE html>
       <html>
         <head>
-          <title>QR Code - ${pageData?.nome1} e ${pageData?.nome2}</title>
+          <title>QR Code - ${pageData?.nome1} & ${pageData?.nome2}</title>
           <style>
             body {
               display: flex;
               flex-direction: column;
               align-items: center;
               justify-content: center;
-              height: 100vh;
+              min-height: 100vh;
               margin: 0;
-              font-family: system, -apple-system, sans-serif;
+              padding: 20px;
+              font-family: system-ui, -apple-system, sans-serif;
             }
             h1 {
+              color: #1f2937;
               font-size: 24px;
-              margin-bottom: 20px;
-              color: #333;
-            }
-            #qr-container {
-              margin-bottom: 20px;
+              margin-bottom: 24px;
+              text-align: center;
             }
             p {
-              font-size: 16px;
-              color: #666;
+              color: #6b7280;
+              margin-top: 16px;
               text-align: center;
-              max-width: 400px;
-            }
-            @media print {
-              body {
-                height: auto;
-                padding: 40px 0;
-              }
             }
           </style>
-          <script src="https://cdnjs.cloudflare.com/ajax/libs/qrcode.react/3.1.0/qrcode.min.js"></script>
         </head>
         <body>
-          <h1>${pageData?.nome1} e ${pageData?.nome2}</h1>
-          <div id="qr-container">
-            ${qrCodeHtml}
-          </div>
-          <p>Escaneie o QR Code acima para acessar nossa página de casamento</p>
+          <h1>${pageData?.nome1} & ${pageData?.nome2}</h1>
+          <div id="qr-canvas"></div>
+          <p>Escaneie para acessar nossa página</p>
+          <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
           <script>
-            new QRCode(document.getElementById('qr-canvas'), {
-              text: '${fullUrl}',
-              width: 200,
-              height: 200,
-              colorDark: '#000000',
-              colorLight: '#ffffff',
-              correctLevel: QRCode.CorrectLevel.H
-            });
-            setTimeout(() => window.print(), 500);
+            var qr = qrcode(0, 'H');
+            qr.addData('${fullUrl}');
+            qr.make();
+            document.getElementById('qr-canvas').innerHTML = qr.createImgTag(8);
+            setTimeout(() => {
+              window.print();
+              window.close();
+            }, 500);
           </script>
         </body>
       </html>
-    `;
-
-    qrWindow.document.write(html);
-    qrWindow.document.close();
+    `);
   };
 
   if (isLoading) {
@@ -258,18 +240,12 @@ function FinalizarContent() {
           </div>
 
           <div
-            className={`${
-              !pageData.isPago ? 'blur-sm pointer-events-none opacity-40' : ''
-            }`}
+            className={!pageData.isPago ? 'blur-sm pointer-events-none' : ''}
           >
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-              <Button
-                variant="outline"
-                className="w-full"
-                onClick={handleShare}
-              >
+            <div className="grid grid-cols-1 sm:grid-cols-3 gap-4">
+              <Button className="w-full" onClick={handleShare}>
                 <Share2 className="w-4 h-4 mr-2" />
-                Compartilhar
+                Compartilhar no WhatsApp
               </Button>
               <Button
                 variant="outline"
@@ -289,7 +265,7 @@ function FinalizarContent() {
               </Button>
             </div>
 
-            <div className="flex flex-col items-center space-y-4 mt-6">
+            <div className="flex flex-col items-center space-y-4 mt-8">
               <div id="qrcode">
                 <QRCodeCanvas
                   value={`${window.location.origin}/${pageData.slug}`}
@@ -305,7 +281,7 @@ function FinalizarContent() {
           </div>
 
           {!pageData.isPago && (
-            <div className="bg-white/95 backdrop-blur p-6 rounded-lg">
+            <div className="bg-white/95 backdrop-blur p-6 rounded-lg mt-6">
               <div className="text-center space-y-4 max-w-md mx-auto">
                 <h2 className="text-xl font-semibold text-romantic-800">
                   Prévia da sua página
@@ -328,7 +304,11 @@ function FinalizarContent() {
                       ? 'Acesso vitalício'
                       : `Acesso por ${PLANS[pageData.plano].duration}`}
                   </p>
-                  <Button className="w-full" onClick={handlePayment}>
+                  <Button
+                    size="lg"
+                    className="w-full text-lg py-6 animate-pulse"
+                    onClick={handlePayment}
+                  >
                     Liberar minha página
                   </Button>
                 </div>
