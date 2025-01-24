@@ -68,16 +68,16 @@ export function TemplateModerno({
           {/* Galeria Principal com Carrossel */}
           {fotos.length > 0 && (
             <div className="px-4">
-              <div className="relative rounded-3xl overflow-hidden shadow-2xl aspect-[16/9]">
+              <div className="relative rounded-3xl overflow-hidden shadow-2xl">
                 <Slider {...sliderSettings}>
                   {fotos.map((foto, index) => (
-                    <div key={index} className="relative aspect-[16/9]">
-                      <div className="absolute inset-0">
+                    <div key={index} className="relative">
+                      <div className="flex items-center justify-center bg-gray-900/5 min-h-[300px] md:min-h-[500px]">
                         {/* eslint-disable-next-line @next/next/no-img-element */}
                         <img
                           src={foto}
                           alt={`Momento ${index + 1}`}
-                          className="w-full h-full object-cover"
+                          className="w-full h-full object-contain max-h-[70vh]"
                         />
                         <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-50" />
                       </div>
