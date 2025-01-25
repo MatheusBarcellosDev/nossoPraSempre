@@ -19,6 +19,12 @@ export const metadata: Metadata = {
     shortcut: '/favicon.ico',
     apple: '/apple-touch-icon.png',
   },
+  viewport: {
+    width: 'device-width',
+    initialScale: 1,
+    maximumScale: 1,
+    userScalable: false,
+  },
 };
 
 export default function RootLayout({
@@ -41,6 +47,14 @@ export default function RootLayout({
           name="google-site-verification"
           content="6jHrU9skNVLFmFeLhTdCsebqC8RPoA-fOR1z"
         />
+        <style>{`
+          html, body {
+            touch-action: manipulation;
+          }
+          input, textarea, select {
+            font-size: 16px !important;
+          }
+        `}</style>
       </head>
       <body className={inter.className}>
         <PlanProvider>
