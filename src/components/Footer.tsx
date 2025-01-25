@@ -2,6 +2,7 @@
 
 import LottieAnimation from '@/components/LottieAnimation';
 import emailAnimation from '../../public/email-file.json';
+import { Facebook, Instagram, MessageCircle } from 'lucide-react';
 
 export function Footer() {
   return (
@@ -30,6 +31,35 @@ export function Footer() {
                 contato@onossoprasempre.com.br
               </a>
             </p>
+            <div className="flex flex-col gap-3 pt-2">
+              <a
+                href="https://www.instagram.com/o_nossoprasempre"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-romantic-200 hover:text-romantic-300 transition-colors"
+              >
+                <Instagram className="w-5 h-5" />
+                <span>@o_nossoprasempre</span>
+              </a>
+              <a
+                href="https://www.tiktok.com/@o.nossoprasempre"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-romantic-200 hover:text-romantic-300 transition-colors"
+              >
+                <MessageCircle className="w-5 h-5" />
+                <span>@o.nossoprasempre</span>
+              </a>
+              <a
+                href="https://www.facebook.com/share/15rHfMXCEa/?mibextid=wwXIfr"
+                target="_blank"
+                rel="noopener noreferrer"
+                className="flex items-center gap-2 text-romantic-200 hover:text-romantic-300 transition-colors"
+              >
+                <Facebook className="w-5 h-5" />
+                <span>O Nosso Pra Sempre</span>
+              </a>
+            </div>
           </div>
         </div>
         <div className="border-t border-romantic-700 mt-8 pt-8 text-center text-romantic-300">
