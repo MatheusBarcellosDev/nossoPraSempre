@@ -4,7 +4,15 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { templates } from '@/components/templates';
-import { Share2, Printer } from 'lucide-react';
+import {
+  Share2,
+  Printer,
+  Facebook,
+  Twitter,
+  Send,
+  Linkedin,
+  Instagram,
+} from 'lucide-react';
 import { toast } from 'sonner';
 import { PasswordCheck } from '@/components/PasswordCheck';
 
@@ -104,17 +112,92 @@ export default function Page() {
 
   const Template = templates[pageData.template];
 
-  const handleShare = async () => {
+  const handleWhatsAppShare = async () => {
     try {
       const text =
-        `💑 Queremos compartilhar nossa história de amor com você! ✨\n\n` +
-        `${pageData.nome1} & ${pageData.nome2} criaram uma página especial para eternizar momentos únicos.\n\n` +
-        `💝 Faça parte dessa história de amor:\n${fullUrl}`;
+        `💑 ${pageData.nome1} & ${pageData.nome2}\n\n` +
+        `✨ Queremos compartilhar nossa história de amor com você!\n\n` +
+        `💝 Visite nossa página especial:\n${fullUrl}\n\n` +
+        `🤍 O Nosso Pra Sempre`;
 
       const whatsappUrl = `https://wa.me/?text=${encodeURIComponent(text)}`;
       window.open(whatsappUrl, '_blank');
     } catch {
-      toast.error('Erro ao compartilhar');
+      toast.error('Erro ao compartilhar no WhatsApp');
+    }
+  };
+
+  const handleInstagramShare = () => {
+    try {
+      const text = `${pageData.nome1} & ${pageData.nome2}\n💑 Nossa História de Amor ✨\n${fullUrl}`;
+      const instagramUrl = `instagram://story-camera`;
+
+      navigator.clipboard.writeText(text);
+      window.location.href = instagramUrl;
+
+      toast.success('Abra o Instagram Stories e cole o texto copiado! 📸✨');
+    } catch {
+      toast.error('Erro ao abrir o Instagram');
+    }
+  };
+
+  const handleFacebookShare = () => {
+    try {
+      const text =
+        `💑 ${pageData.nome1} & ${pageData.nome2}\n\n` +
+        `✨ Nossa história de amor está online!\n` +
+        `🤍 O Nosso Pra Sempre`;
+      const facebookUrl = `https://www.facebook.com/sharer/sharer.php?u=${encodeURIComponent(
+        fullUrl
+      )}&quote=${encodeURIComponent(text)}`;
+      window.open(facebookUrl, '_blank');
+    } catch {
+      toast.error('Erro ao compartilhar no Facebook');
+    }
+  };
+
+  const handleTwitterShare = () => {
+    try {
+      const text =
+        `💑 ${pageData.nome1} & ${pageData.nome2}\n` +
+        `✨ Nossa história de amor está online!\n` +
+        `🤍 O Nosso Pra Sempre\n\n`;
+      const twitterUrl = `https://twitter.com/intent/tweet?text=${encodeURIComponent(
+        text
+      )}&url=${encodeURIComponent(fullUrl)}`;
+      window.open(twitterUrl, '_blank');
+    } catch {
+      toast.error('Erro ao compartilhar no Twitter');
+    }
+  };
+
+  const handleTelegramShare = () => {
+    try {
+      const text =
+        `💑 ${pageData.nome1} & ${pageData.nome2}\n\n` +
+        `✨ Nossa história de amor está online!\n\n` +
+        `Visite nossa página especial:\n${fullUrl}\n\n` +
+        `🤍 O Nosso Pra Sempre`;
+      const telegramUrl = `https://t.me/share/url?url=${encodeURIComponent(
+        fullUrl
+      )}&text=${encodeURIComponent(text)}`;
+      window.open(telegramUrl, '_blank');
+    } catch {
+      toast.error('Erro ao compartilhar no Telegram');
+    }
+  };
+
+  const handleLinkedInShare = () => {
+    try {
+      const text =
+        `${pageData.nome1} & ${pageData.nome2} - Nossa História de Amor\n` +
+        `O Nosso Pra Sempre`;
+      const linkedinUrl = `https://www.linkedin.com/sharing/share-offsite/?url=${encodeURIComponent(
+        fullUrl
+      )}&summary=${encodeURIComponent(text)}`;
+      window.open(linkedinUrl, '_blank');
+    } catch {
+      toast.error('Erro ao compartilhar no LinkedIn');
     }
   };
 
@@ -149,26 +232,61 @@ export default function Page() {
               margin-top: 16px;
               text-align: center;
             }
+            .print-button {
+              margin-top: 20px;
+              padding: 10px 20px;
+              background-color: #E11D48;
+              color: white;
+              border: none;
+              border-radius: 8px;
+              cursor: pointer;
+              font-size: 16px;
+            }
+            .print-button:hover {
+              background-color: #BE123C;
+            }
+            @media print {
+              .print-button {
+                display: none;
+              }
+            }
           </style>
         </head>
         <body>
           <h1>${pageData.nome1} & ${pageData.nome2}</h1>
           <div id="qr-canvas"></div>
           <p>Escaneie para acessar nossa página</p>
+          <button class="print-button" onclick="handlePrint()">Imprimir QR Code</button>
           <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
           <script>
+            function handlePrint() {
+              window.print();
+            }
+            
+            // Gera o QR Code
             var qr = qrcode(0, 'H');
             qr.addData('${fullUrl}');
             qr.make();
+            
+            // Insere o QR Code na página
             document.getElementById('qr-canvas').innerHTML = qr.createImgTag(8);
-            setTimeout(() => {
-              window.print();
-              window.close();
-            }, 500);
+            
+            // Garante que o QR Code foi renderizado
+            window.onload = function() {
+              if (!document.getElementById('qr-canvas').innerHTML) {
+                qr = qrcode(0, 'H');
+                qr.addData('${fullUrl}');
+                qr.make();
+                document.getElementById('qr-canvas').innerHTML = qr.createImgTag(8);
+              }
+            };
           </script>
         </body>
       </html>
     `);
+
+    // Fecha o documento para finalizar a escrita
+    printWindow.document.close();
   };
 
   const jsonLd = {
@@ -205,20 +323,59 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Botões de ação */}
-      <div className="fixed bottom-6 right-6 flex gap-2">
-        <button
-          onClick={handleShare}
-          className="p-2 bg-romantic-500 text-white rounded-full shadow-lg hover:bg-romantic-600 transition-colors"
-        >
-          <Share2 className="w-5 h-5" />
-        </button>
-        <button
-          onClick={handlePrint}
-          className="p-2 bg-romantic-500 text-white rounded-full shadow-lg hover:bg-romantic-600 transition-colors"
-        >
-          <Printer className="w-5 h-5" />
-        </button>
+      {/* Botões de compartilhamento */}
+      <div className="fixed bottom-6 right-6 flex flex-col gap-2 items-end z-50">
+        <div className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg flex gap-2">
+          <button
+            onClick={handleWhatsAppShare}
+            className="p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
+            title="Compartilhar no WhatsApp"
+          >
+            <Share2 className="w-5 h-5" />
+          </button>
+          <button
+            onClick={handleInstagramShare}
+            className="p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
+            title="Compartilhar no Instagram"
+          >
+            <Instagram className="w-5 h-5" />
+          </button>
+          <button
+            onClick={handleFacebookShare}
+            className="p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
+            title="Compartilhar no Facebook"
+          >
+            <Facebook className="w-5 h-5" />
+          </button>
+          <button
+            onClick={handleTwitterShare}
+            className="p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
+            title="Compartilhar no Twitter"
+          >
+            <Twitter className="w-5 h-5" />
+          </button>
+          <button
+            onClick={handleTelegramShare}
+            className="p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
+            title="Compartilhar no Telegram"
+          >
+            <Send className="w-5 h-5" />
+          </button>
+          <button
+            onClick={handleLinkedInShare}
+            className="p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
+            title="Compartilhar no LinkedIn"
+          >
+            <Linkedin className="w-5 h-5" />
+          </button>
+          <button
+            onClick={handlePrint}
+            className="p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
+            title="Imprimir QR Code"
+          >
+            <Printer className="w-5 h-5" />
+          </button>
+        </div>
       </div>
 
       {/* Template */}
