@@ -106,7 +106,13 @@ export default function Page() {
   if (pageData.isPrivate && !isAuthenticated) {
     return (
       <PasswordCheck
-        onSuccess={() => setIsAuthenticated(true)}
+        onSuccess={() => {
+          setIsAuthenticated(true);
+          // Garante que a página carregue no topo após autenticação
+          setTimeout(() => {
+            window.scrollTo(0, 0);
+          }, 100);
+        }}
         correctPassword={pageData.password || ''}
       />
     );
@@ -320,6 +326,12 @@ export default function Page() {
         type="application/ld+json"
         dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
       />
+      {/* Meta tag para prevenir zoom no mobile */}
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
+      />
+
       <div className="hidden">
         <div id="qr-code">
           <QRCodeCanvas value={fullUrl} size={200} />
