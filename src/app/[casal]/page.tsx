@@ -52,6 +52,8 @@ export default function Page() {
         const data = await response.json();
         setPageData(data);
         setIsAuthenticated(!data.isPrivate);
+        // Scroll para o topo quando a página carregar
+        window.scrollTo(0, 0);
       } catch (error) {
         console.error('Error loading page:', error);
         toast.error('Erro ao carregar página');
@@ -129,13 +131,14 @@ export default function Page() {
 
   const handleInstagramShare = () => {
     try {
-      const text = `${pageData.nome1} & ${pageData.nome2}\n💑 Nossa História de Amor ✨\n${fullUrl}`;
-      const instagramUrl = `instagram://story-camera`;
+      const text = `💑 ${pageData.nome1} & ${pageData.nome2}\n\n✨ Nossa história de amor está online!\n\n${fullUrl}\n\n🤍 O Nosso Pra Sempre`;
 
       navigator.clipboard.writeText(text);
-      window.location.href = instagramUrl;
 
-      toast.success('Abra o Instagram Stories e cole o texto copiado! 📸✨');
+      // Abre o Instagram feed
+      window.location.href = 'instagram://';
+
+      toast.success('Texto copiado! Cole no seu post do Instagram 📸✨');
     } catch {
       toast.error('Erro ao abrir o Instagram');
     }
@@ -325,55 +328,55 @@ export default function Page() {
 
       {/* Botões de compartilhamento */}
       <div className="fixed bottom-6 right-6 flex flex-col gap-2 items-end z-50">
-        <div className="bg-white/90 backdrop-blur-sm rounded-full p-2 shadow-lg flex gap-2">
+        <div className="bg-white/90 backdrop-blur-sm rounded-full p-1.5 sm:p-2 shadow-lg flex gap-1 sm:gap-2">
           <button
             onClick={handleWhatsAppShare}
-            className="p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
+            className="p-1.5 sm:p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
             title="Compartilhar no WhatsApp"
           >
-            <Share2 className="w-5 h-5" />
+            <Share2 className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <button
             onClick={handleInstagramShare}
-            className="p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
+            className="p-1.5 sm:p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
             title="Compartilhar no Instagram"
           >
-            <Instagram className="w-5 h-5" />
+            <Instagram className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <button
             onClick={handleFacebookShare}
-            className="p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
+            className="p-1.5 sm:p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
             title="Compartilhar no Facebook"
           >
-            <Facebook className="w-5 h-5" />
+            <Facebook className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <button
             onClick={handleTwitterShare}
-            className="p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
+            className="p-1.5 sm:p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
             title="Compartilhar no Twitter"
           >
-            <Twitter className="w-5 h-5" />
+            <Twitter className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <button
             onClick={handleTelegramShare}
-            className="p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
+            className="p-1.5 sm:p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
             title="Compartilhar no Telegram"
           >
-            <Send className="w-5 h-5" />
+            <Send className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <button
             onClick={handleLinkedInShare}
-            className="p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
+            className="p-1.5 sm:p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
             title="Compartilhar no LinkedIn"
           >
-            <Linkedin className="w-5 h-5" />
+            <Linkedin className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
           <button
             onClick={handlePrint}
-            className="p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
+            className="p-1.5 sm:p-2 bg-romantic-500 text-white rounded-full shadow-sm hover:bg-romantic-600 transition-colors"
             title="Imprimir QR Code"
           >
-            <Printer className="w-5 h-5" />
+            <Printer className="w-4 h-4 sm:w-5 sm:h-5" />
           </button>
         </div>
       </div>
