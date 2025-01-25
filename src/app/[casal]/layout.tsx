@@ -22,6 +22,12 @@ export async function generateMetadata({
     ? `${page.mensagem.slice(0, 150)}...`
     : `Celebre a história de amor de ${page.nome1} e ${page.nome2}`;
 
+  // Usa a primeira foto do casal se existir
+  const previewImage =
+    page.fotos && page.fotos.length > 0
+      ? page.fotos[0]
+      : `/api/og/${params.casal}`;
+
   return {
     title,
     description,
@@ -32,7 +38,7 @@ export async function generateMetadata({
       siteName: 'O Nosso Pra Sempre',
       images: [
         {
-          url: `/api/og/${params.casal}`,
+          url: previewImage,
           width: 1200,
           height: 630,
           alt: `${page.nome1} & ${page.nome2} - Nossa História de Amor`,
@@ -43,7 +49,7 @@ export async function generateMetadata({
       card: 'summary_large_image',
       title,
       description,
-      images: [`/api/og/${params.casal}`],
+      images: [previewImage],
     },
   };
 }
