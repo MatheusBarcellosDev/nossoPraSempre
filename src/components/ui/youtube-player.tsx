@@ -16,7 +16,6 @@ export function YouTubePlayer({ url, className = '' }: YouTubePlayerProps) {
   )?.[1];
 
   useEffect(() => {
-    // Tenta iniciar o vídeo com som após interação do usuário
     const handleVisibilityChange = () => {
       if (document.visibilityState === 'visible' && iframeRef.current) {
         iframeRef.current.src = iframeRef.current.src.replace(
@@ -37,19 +36,16 @@ export function YouTubePlayer({ url, className = '' }: YouTubePlayerProps) {
 
   if (!videoId) return null;
 
-  // Configuração inicial com todos os parâmetros necessários
   const embedUrl = `https://www.youtube.com/embed/${videoId}?autoplay=1&mute=0&loop=1&playlist=${videoId}&playsinline=1&controls=1&enablejsapi=1&origin=${encodeURIComponent(
     window.location.origin
-  )}&widget_referrer=${encodeURIComponent(
-    window.location.href
-  )}&picture-in-picture=0&pip=0`;
+  )}`;
 
   return (
     <div className={`aspect-video ${className}`}>
       <iframe
         ref={iframeRef}
         src={embedUrl}
-        allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; microphone; autoplay"
+        allow="autoplay; clipboard-write; encrypted-media; accelerometer; gyroscope; microphone"
         allowFullScreen
         className="w-full h-full rounded-lg"
       />

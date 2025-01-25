@@ -43,6 +43,7 @@ function FinalizarContent() {
   const [pageData, setPageData] = useState<PageData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState<number>(30 * 60); // 30 minutos em segundos
+  const [isProcessingPayment, setIsProcessingPayment] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const slug = searchParams.get('slug');
@@ -95,6 +96,7 @@ function FinalizarContent() {
 
   const handlePayment = async () => {
     if (!pageData) return;
+    setIsProcessingPayment(true);
 
     try {
       const response = await fetch('/api/payment', {
@@ -125,6 +127,7 @@ function FinalizarContent() {
       toast.error(
         error instanceof Error ? error.message : 'Erro ao processar pagamento'
       );
+      setIsProcessingPayment(false);
     }
   };
 
@@ -306,10 +309,21 @@ function FinalizarContent() {
                   </p>
                   <Button
                     size="lg"
-                    className="w-full text-lg py-6 animate-pulse"
+                    className="w-full text-lg py-8 bg-romantic-500 hover:bg-romantic-600 disabled:bg-romantic-400 shadow-lg hover:shadow-xl transition-all duration-300 relative overflow-hidden group"
                     onClick={handlePayment}
+                    disabled={isProcessingPayment}
                   >
-                    Liberar minha página
+                    {isProcessingPayment ? (
+                      <>
+                        <div className="w-5 h-5 border-2 border-white/30 border-t-white rounded-full animate-spin mr-2" />
+                        Processando...
+                      </>
+                    ) : (
+                      <>
+                        Liberar minha página
+                        <div className="absolute inset-0 bg-white/10 transform translate-y-full group-hover:translate-y-0 transition-transform duration-300" />
+                      </>
+                    )}
                   </Button>
                 </div>
               </div>
