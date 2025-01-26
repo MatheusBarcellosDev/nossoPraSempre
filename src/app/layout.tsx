@@ -4,6 +4,7 @@ import { Inter } from 'next/font/google';
 import { PlanProvider } from '@/contexts/PlanContext';
 import { Toaster } from 'sonner';
 import CloudinaryConfig from '@/components/CloudinaryConfig';
+import { Analytics } from '@vercel/analytics/react';
 
 const inter = Inter({ subsets: ['latin'] });
 
@@ -62,6 +63,7 @@ export default function RootLayout({
           {children}
           <Toaster richColors position="top-right" />
         </PlanProvider>
+        <Analytics />
       </body>
     </html>
   );
