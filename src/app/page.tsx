@@ -1,4 +1,3 @@
-import dynamic from 'next/dynamic';
 import { FAQSection } from '@/components/FAQSection';
 import { HowItWorks } from '@/components/HowItWorks';
 import { SpecialFeatures } from '@/components/SpecialFeatures';

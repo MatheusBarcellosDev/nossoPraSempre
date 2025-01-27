@@ -5,25 +5,17 @@ import { Check } from 'lucide-react';
 import { motion } from 'framer-motion';
 import Link from 'next/link';
 
-const PLANS = {
-  basic: {
-    type: 'basic',
-    maxPhotos: 3,
-    duration: '1 ano',
-    price: 19.9,
-  },
-  premium: {
-    type: 'premium',
-    maxPhotos: 6,
-    duration: 'vitalício',
-    price: 29.9,
-  },
+const PLAN = {
+  type: 'premium',
+  maxPhotos: 6,
+  duration: 'vitalício',
+  price: 24.9,
 };
 
 export function PlansSection() {
   return (
-    <section id="plans" className="py-24 md:py-32 mt-16 md:mt-24">
-      <div className="max-w-6xl mx-auto px-4 md:px-8">
+    <section id="plans" className="py-24 md:py-32">
+      <div className="max-w-3xl mx-auto px-4 md:px-8">
         <motion.div
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
@@ -32,114 +24,73 @@ export function PlansSection() {
           className="text-center mb-16"
         >
           <h2 className="text-3xl font-semibold text-romantic-800">
-            Escolha seu Plano
+            Plano Único
           </h2>
           <p className="text-romantic-600 mt-4">
-            Selecione o plano ideal para eternizar sua história de amor
+            Tudo que você precisa para eternizar sua história de amor
           </p>
         </motion.div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.1 }}
-          >
-            <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300">
-              <Link href={{ pathname: '/criar', query: { plan: 'basic' } }}>
-                <CardContent className="p-8">
-                  <div className="space-y-2 text-center">
-                    <h3 className="text-2xl font-semibold text-romantic-800">
-                      Plano Básico
-                    </h3>
-                    <div className="text-4xl font-bold text-romantic-600">
-                      R$ {PLANS.basic.price.toFixed(2)}
-                    </div>
-                    <p className="text-romantic-500 text-sm">
-                      Pagamento único • {PLANS.basic.duration}
-                    </p>
+        <motion.div
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
+          <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-romantic-500">
+            <Link href={{ pathname: '/criar', query: { plan: 'premium' } }}>
+              <CardContent className="p-8">
+                <div className="space-y-2 text-center">
+                  <h3 className="text-2xl font-semibold text-white">
+                    Plano Premium
+                  </h3>
+                  <div className="text-4xl font-bold text-white">
+                    R$ {PLAN.price.toFixed(2)}
                   </div>
+                  <p className="text-romantic-100 text-sm">
+                    Pagamento único • {PLAN.duration}
+                  </p>
+                </div>
 
-                  <div className="space-y-3 pt-4">
-                    <div className="flex items-center gap-2 text-romantic-700">
-                      <Check className="w-5 h-5 text-romantic-500" />
-                      <span>Site personalizado</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-romantic-700">
-                      <Check className="w-5 h-5 text-romantic-500" />
-                      <span>{PLANS.basic.maxPhotos} fotos do casal</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-romantic-700">
-                      <Check className="w-5 h-5 text-romantic-500" />
-                      <span>Link exclusivo</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-romantic-700">
-                      <Check className="w-5 h-5 text-romantic-500" />
-                      <span>QR Code para compartilhar</span>
-                    </div>
+                <div className="space-y-3 pt-6">
+                  <div className="flex items-center gap-2 text-white">
+                    <Check className="w-5 h-5 text-romantic-100" />
+                    <span>Site personalizado e exclusivo</span>
                   </div>
+                  <div className="flex items-center gap-2 text-white">
+                    <Check className="w-5 h-5 text-romantic-100" />
+                    <span>Até {PLAN.maxPhotos} fotos do casal</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white">
+                    <Check className="w-5 h-5 text-romantic-100" />
+                    <span>Música personalizada</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white">
+                    <Check className="w-5 h-5 text-romantic-100" />
+                    <span>Link exclusivo vitalício</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white">
+                    <Check className="w-5 h-5 text-romantic-100" />
+                    <span>QR Code para compartilhar</span>
+                  </div>
+                  <div className="flex items-center gap-2 text-white">
+                    <Check className="w-5 h-5 text-romantic-100" />
+                    <span>Opção de página privada com senha</span>
+                  </div>
+                </div>
 
-                  <div className="pt-6">
-                    <button className="w-full py-3 px-4 bg-romantic-100 hover:bg-romantic-200 text-romantic-700 rounded-lg transition-colors">
-                      Criar Agora • Pague Depois
-                    </button>
-                  </div>
-                </CardContent>
-              </Link>
-            </Card>
-          </motion.div>
-
-          <motion.div
-            initial={{ opacity: 0, y: 20 }}
-            whileInView={{ opacity: 1, y: 0 }}
-            viewport={{ once: true }}
-            transition={{ duration: 0.8, delay: 0.2 }}
-          >
-            <Card className="relative overflow-hidden group hover:shadow-lg transition-all duration-300 bg-romantic-500">
-              <Link href={{ pathname: '/criar', query: { plan: 'premium' } }}>
-                <CardContent className="p-8">
-                  <div className="space-y-2 text-center">
-                    <h3 className="text-2xl font-semibold text-white">
-                      Plano Premium
-                    </h3>
-                    <div className="text-4xl font-bold text-white">
-                      R$ {PLANS.premium.price.toFixed(2)}
-                    </div>
-                    <p className="text-romantic-100 text-sm">
-                      Pagamento único • {PLANS.premium.duration}
-                    </p>
-                  </div>
-
-                  <div className="space-y-3 pt-4">
-                    <div className="flex items-center gap-2 text-white">
-                      <Check className="w-5 h-5 text-romantic-100" />
-                      <span>Site personalizado</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-white">
-                      <Check className="w-5 h-5 text-romantic-100" />
-                      <span>{PLANS.premium.maxPhotos} fotos do casal</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-white">
-                      <Check className="w-5 h-5 text-romantic-100" />
-                      <span>Link exclusivo</span>
-                    </div>
-                    <div className="flex items-center gap-2 text-white">
-                      <Check className="w-5 h-5 text-romantic-100" />
-                      <span>QR Code para compartilhar</span>
-                    </div>
-                  </div>
-
-                  <div className="pt-6">
-                    <button className="w-full py-3 px-4 bg-white hover:bg-romantic-50 text-romantic-500 rounded-lg transition-colors">
-                      Criar Agora • Pague Depois
-                    </button>
-                  </div>
-                </CardContent>
-              </Link>
-            </Card>
-          </motion.div>
-        </div>
+                <div className="pt-8">
+                  <button className="w-full py-4 px-4 bg-white hover:bg-romantic-50 text-romantic-500 rounded-lg transition-colors text-lg font-medium">
+                    Criar Agora • Pague Depois
+                  </button>
+                  <p className="text-romantic-100 text-sm text-center mt-4">
+                    Crie sua página sem compromisso
+                  </p>
+                </div>
+              </CardContent>
+            </Link>
+          </Card>
+        </motion.div>
       </div>
     </section>
   );
