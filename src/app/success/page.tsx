@@ -17,6 +17,7 @@ const QRCodeSVG = dynamic(
 function SuccessContent() {
   const searchParams = useSearchParams();
   const slug = searchParams.get('slug');
+  console.log(slug);
   const baseUrl = process.env.NEXT_PUBLIC_URL;
   const pageUrl = `${baseUrl}/${slug}`;
 
@@ -50,11 +51,20 @@ function SuccessContent() {
 
     const fullUrl = `${window.location.origin}/${slug}`;
 
+    // Extrair os nomes do slug e capitalizar primeira letra
+    const names = slug?.split('-m')[0].split('-e-') || ['', ''];
+    const nome1 = names[0]
+      .replace(/-/g, ' ')
+      .replace(/^\w/, (c) => c.toUpperCase());
+    const nome2 = names[1]
+      .replace(/-/g, ' ')
+      .replace(/^\w/, (c) => c.toUpperCase());
+
     printWindow.document.write(`
       <!DOCTYPE html>
       <html>
         <head>
-          <title>QR Code - O Nosso Pra Sempre</title>
+          <title>QR Code - ${nome1} & ${nome2}</title>
           <style>
             body {
               display: flex;
@@ -65,20 +75,59 @@ function SuccessContent() {
               margin: 0;
               padding: 20px;
               font-family: system-ui, -apple-system, sans-serif;
+              background-color: white;
             }
-            h1 {
+            .container {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              width: 100%;
+              max-width: 400px;
+              aspect-ratio: 1;
+              padding: 24px;
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
+            }
+            .couple-names {
+              font-size: 42px;
+              font-weight: 600;
               color: #1f2937;
-              font-size: 24px;
-              margin-bottom: 24px;
               text-align: center;
+              line-height: 1.2;
+              margin-bottom: 4px;
+              letter-spacing: -0.02em;
             }
-            p {
+            .heart {
+              color: #E11D48;
+              font-size: 36px;
+              margin: 0 12px;
+              display: inline-block;
+              transform: translateY(2px);
+            }
+            .brand {
+              font-size: 18px;
               color: #6b7280;
-              margin-top: 16px;
               text-align: center;
+              margin-bottom: 16px;
+              letter-spacing: 0.05em;
+            }
+            .website {
+              font-size: 12px;
+              color: #9CA3AF;
+              text-align: center;
+              margin-top: 8px;
+              letter-spacing: 0.05em;
+            }
+            #qr-canvas {
+              margin: 0;
+            }
+            #qr-canvas img {
+              display: block;
             }
             .print-button {
-              margin-top: 20px;
+              margin-top: 32px;
               padding: 10px 20px;
               background-color: #E11D48;
               color: white;
@@ -86,6 +135,8 @@ function SuccessContent() {
               border-radius: 8px;
               cursor: pointer;
               font-size: 16px;
+              position: relative;
+              z-index: 10;
             }
             .print-button:hover {
               background-color: #BE123C;
@@ -94,16 +145,24 @@ function SuccessContent() {
               .print-button {
                 display: none;
               }
+              body {
+                margin: 0;
+                padding: 0;
+              }
+              .container {
+                padding: 20px;
+              }
             }
           </style>
         </head>
         <body>
-          <h1>Nossa página no O Nosso Pra Sempre</h1>
-          <div id="qr-canvas"></div>
-          <p style="font-size: 20px; color: #1f2937; margin-top: 16px; margin-bottom: 8px;">O Nosso Pra Sempre</p>
-          <p style="font-size: 14px; color: #6b7280; margin-bottom: 16px;">www.onossoprasempre.com.br</p>
-          <p>Escaneie para acessar a página</p>
-          <button class="print-button" onclick="handlePrint()">Imprimir QR Code</button>
+          <div class="container">
+            <p class="couple-names">${nome1}<span class="heart">♥</span>${nome2}</p>
+            <p class="brand">O Nosso Pra Sempre</p>
+            <div id="qr-canvas"></div>
+            <p class="website">www.onossoprasempre.com.br</p>
+            <button class="print-button" onclick="handlePrint()">Imprimir QR Code</button>
+          </div>
           <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
           <script>
             function handlePrint() {

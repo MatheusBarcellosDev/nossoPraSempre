@@ -229,20 +229,56 @@ export default function Page() {
               margin: 0;
               padding: 20px;
               font-family: system-ui, -apple-system, sans-serif;
+              background-color: white;
             }
-            h1 {
+            .container {
+              display: flex;
+              flex-direction: column;
+              align-items: center;
+              width: 100%;
+              max-width: 400px;
+              aspect-ratio: 1;
+              padding: 32px;
+              position: relative;
+            }
+            .couple-names {
+              font-size: 42px;
+              font-weight: 600;
               color: #1f2937;
-              font-size: 24px;
-              margin-bottom: 24px;
               text-align: center;
+              line-height: 1.2;
+              margin-bottom: 8px;
+              letter-spacing: -0.02em;
             }
-            p {
+            .heart {
+              color: #E11D48;
+              font-size: 36px;
+              margin: 0 12px;
+              display: inline-block;
+              transform: translateY(2px);
+            }
+            .brand {
+              font-size: 18px;
               color: #6b7280;
-              margin-top: 16px;
               text-align: center;
+              margin-bottom: 24px;
+              letter-spacing: 0.05em;
+            }
+            .website {
+              font-size: 12px;
+              color: #9CA3AF;
+              text-align: center;
+              margin-top: 16px;
+              letter-spacing: 0.05em;
+            }
+            #qr-canvas {
+              margin: 0;
+            }
+            #qr-canvas img {
+              display: block;
             }
             .print-button {
-              margin-top: 20px;
+              margin-top: 32px;
               padding: 10px 20px;
               background-color: #E11D48;
               color: white;
@@ -250,6 +286,8 @@ export default function Page() {
               border-radius: 8px;
               cursor: pointer;
               font-size: 16px;
+              position: relative;
+              z-index: 10;
             }
             .print-button:hover {
               background-color: #BE123C;
@@ -258,16 +296,24 @@ export default function Page() {
               .print-button {
                 display: none;
               }
+              body {
+                margin: 0;
+                padding: 0;
+              }
+              .container {
+                padding: 20px;
+              }
             }
           </style>
         </head>
         <body>
-          <h1>Nossa página no O Nosso Pra Sempre</h1>
-          <div id="qr-canvas"></div>
-          <p style="font-size: 20px; color: #1f2937; margin-top: 16px; margin-bottom: 8px;">${pageData.nome1} & ${pageData.nome2}</p>
-          <p style="font-size: 14px; color: #6b7280; margin-bottom: 16px;">www.onossoprasempre.com.br</p>
-          <p>Escaneie para acessar a página</p>
-          <button class="print-button" onclick="handlePrint()">Imprimir QR Code</button>
+          <div class="container">
+            <p class="couple-names">${pageData.nome1}<span class="heart">♥</span>${pageData.nome2}</p>
+            <p class="brand">O Nosso Pra Sempre</p>
+            <div id="qr-canvas"></div>
+            <p class="website">www.onossoprasempre.com.br</p>
+            <button class="print-button" onclick="handlePrint()">Imprimir QR Code</button>
+          </div>
           <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
           <script>
             function handlePrint() {
