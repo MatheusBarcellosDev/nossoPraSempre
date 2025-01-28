@@ -15,32 +15,24 @@ export async function GET(
       return new NextResponse('Página não encontrada', { status: 404 });
     }
 
+    const baseUrl =
+      process.env.NEXT_PUBLIC_URL || 'https://www.onossoprasempre.com.br';
+
     // Gerar manifest dinâmico
     const manifest = {
       name: `${page.nome1} & ${page.nome2}`,
       short_name: `${page.nome1} & ${page.nome2}`,
       description: `Celebre a história de amor de ${page.nome1} e ${page.nome2}`,
-      start_url: `/${params.casal}`,
-      scope: `/${params.casal}`,
+      start_url: `${baseUrl}/${params.casal}`,
+      scope: `${baseUrl}/${params.casal}`,
       display: 'standalone',
       background_color: '#ffffff',
       theme_color: '#E11D48',
       icons: [
         {
-          src: '/icon-192x192.png',
-          sizes: '192x192',
-          type: 'image/png',
-        },
-        {
-          src: '/icon-512x512.png',
+          src: '/logo.jpg',
           sizes: '512x512',
-          type: 'image/png',
-        },
-        {
-          src: '/icon-192x192.png',
-          sizes: '192x192',
-          type: 'image/png',
-          purpose: 'maskable',
+          type: 'image/jpeg',
         },
       ],
     };

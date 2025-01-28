@@ -35,8 +35,8 @@ export async function generateMetadata({
         maximumScale: 1,
       },
       icons: {
-        icon: '/icon-192x192.png',
-        apple: '/icon-192x192.png',
+        icon: '/logo.jpg',
+        apple: '/logo.jpg',
       },
       openGraph: {
         title,
