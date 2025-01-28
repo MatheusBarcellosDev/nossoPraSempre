@@ -239,7 +239,10 @@ export default function Page() {
               max-width: 400px;
               aspect-ratio: 1;
               padding: 32px;
-              position: relative;
+              position: fixed;
+              top: 50%;
+              left: 50%;
+              transform: translate(-50%, -50%);
             }
             .couple-names {
               font-size: 42px;
