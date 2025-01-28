@@ -1,5 +1,6 @@
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
+import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
 
 export async function generateMetadata({
   params,
@@ -26,6 +27,17 @@ export async function generateMetadata({
     return {
       title,
       description,
+      manifest: `/${params.casal}/manifest.json`,
+      themeColor: '#E11D48',
+      viewport: {
+        width: 'device-width',
+        initialScale: 1,
+        maximumScale: 1,
+      },
+      icons: {
+        icon: '/icon-192x192.png',
+        apple: '/icon-192x192.png',
+      },
       openGraph: {
         title,
         description,
@@ -76,6 +88,21 @@ export async function generateMetadata({
   }
 }
 
-export default function Layout({ children }: { children: React.ReactNode }) {
-  return children;
+export default function Layout({
+  children,
+  params,
+}: {
+  children: React.ReactNode;
+  params: { casal: string };
+}) {
+  return (
+    <>
+      <head>
+        <meta name="apple-mobile-web-app-capable" content="yes" />
+        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
+        <ServiceWorkerRegistration slug={params.casal} />
+      </head>
+      {children}
+    </>
+  );
 }
