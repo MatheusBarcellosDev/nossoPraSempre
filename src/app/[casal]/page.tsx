@@ -238,7 +238,7 @@ export default function Page() {
               width: 100%;
               max-width: 400px;
               aspect-ratio: 1;
-              padding: 32px;
+              padding: 31px;
               position: fixed;
               top: 50%;
               left: 50%;
