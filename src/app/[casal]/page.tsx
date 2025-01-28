@@ -262,9 +262,11 @@ export default function Page() {
           </style>
         </head>
         <body>
-          <h1>${pageData.nome1} & ${pageData.nome2}</h1>
+          <h1>Nossa página no O Nosso Pra Sempre</h1>
           <div id="qr-canvas"></div>
-          <p>Escaneie para acessar nossa página</p>
+          <p style="font-size: 20px; color: #1f2937; margin-top: 16px; margin-bottom: 8px;">${pageData.nome1} & ${pageData.nome2}</p>
+          <p style="font-size: 14px; color: #6b7280; margin-bottom: 16px;">www.onossoprasempre.com.br</p>
+          <p>Escaneie para acessar a página</p>
           <button class="print-button" onclick="handlePrint()">Imprimir QR Code</button>
           <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
           <script>

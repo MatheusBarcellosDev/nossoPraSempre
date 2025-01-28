@@ -10,7 +10,7 @@ const plans = {
     name: 'Plano Básico',
   },
   premium: {
-    price: 2990, // R$ 29,90
+    price: 2490, // R$ 24,90
     name: 'Plano Premium',
   },
 };

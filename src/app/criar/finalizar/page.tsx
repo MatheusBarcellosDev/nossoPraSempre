@@ -20,7 +20,7 @@ const PLANS = {
     type: 'premium',
     maxPhotos: 6,
     duration: 'vitalício',
-    price: 29.9,
+    price: 24.9,
   },
 } as const;
 
@@ -181,26 +181,63 @@ function FinalizarContent() {
               margin-top: 16px;
               text-align: center;
             }
+            .print-button {
+              margin-top: 20px;
+              padding: 10px 20px;
+              background-color: #E11D48;
+              color: white;
+              border: none;
+              border-radius: 8px;
+              cursor: pointer;
+              font-size: 16px;
+            }
+            .print-button:hover {
+              background-color: #BE123C;
+            }
+            @media print {
+              .print-button {
+                display: none;
+              }
+            }
           </style>
         </head>
         <body>
-          <h1>${pageData?.nome1} & ${pageData?.nome2}</h1>
+          <h1>Nossa página no O Nosso Pra Sempre</h1>
           <div id="qr-canvas"></div>
-          <p>Escaneie para acessar nossa página</p>
+          <p style="font-size: 20px; color: #1f2937; margin-top: 16px; margin-bottom: 8px;">${pageData?.nome1} & ${pageData?.nome2}</p>
+          <p style="font-size: 14px; color: #6b7280; margin-bottom: 16px;">www.onossoprasempre.com.br</p>
+          <p>Escaneie para acessar a página</p>
+          <button class="print-button" onclick="handlePrint()">Imprimir QR Code</button>
           <script src="https://cdn.jsdelivr.net/npm/qrcode-generator@1.4.4/qrcode.min.js"></script>
           <script>
+            function handlePrint() {
+              window.print();
+            }
+            
+            // Gera o QR Code
             var qr = qrcode(0, 'H');
             qr.addData('${fullUrl}');
             qr.make();
+            
+            // Insere o QR Code na página
             document.getElementById('qr-canvas').innerHTML = qr.createImgTag(8);
-            setTimeout(() => {
-              window.print();
-              window.close();
-            }, 500);
+            
+            // Garante que o QR Code foi renderizado
+            window.onload = function() {
+              if (!document.getElementById('qr-canvas').innerHTML) {
+                qr = qrcode(0, 'H');
+                qr.addData('${fullUrl}');
+                qr.make();
+                document.getElementById('qr-canvas').innerHTML = qr.createImgTag(8);
+              }
+            };
           </script>
         </body>
       </html>
     `);
+
+    // Fecha o documento para finalizar a escrita
+    printWindow.document.close();
   };
 
   if (isLoading) {
