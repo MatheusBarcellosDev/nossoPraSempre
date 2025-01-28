@@ -1,6 +1,5 @@
 import { Metadata } from 'next';
 import { prisma } from '@/lib/prisma';
-import { ServiceWorkerRegistration } from '@/components/ServiceWorkerRegistration';
 
 export async function generateMetadata({
   params,
@@ -27,17 +26,6 @@ export async function generateMetadata({
     return {
       title,
       description,
-      manifest: `/${params.casal}/manifest.json`,
-      themeColor: '#E11D48',
-      viewport: {
-        width: 'device-width',
-        initialScale: 1,
-        maximumScale: 1,
-      },
-      icons: {
-        icon: '/logo.jpg',
-        apple: '/logo.jpg',
-      },
       openGraph: {
         title,
         description,
@@ -60,7 +48,6 @@ export async function generateMetadata({
       },
     };
   } catch (error) {
-    // Fallback metadata quando o banco de dados estiver indisponível
     return {
       title: 'O Nosso Pra Sempre',
       description: 'Eternize sua história de amor',
@@ -88,21 +75,6 @@ export async function generateMetadata({
   }
 }
 
-export default function Layout({
-  children,
-  params,
-}: {
-  children: React.ReactNode;
-  params: { casal: string };
-}) {
-  return (
-    <>
-      <head>
-        <meta name="apple-mobile-web-app-capable" content="yes" />
-        <meta name="apple-mobile-web-app-status-bar-style" content="default" />
-        <ServiceWorkerRegistration slug={params.casal} />
-      </head>
-      {children}
-    </>
-  );
+export default function Layout({ children }: { children: React.ReactNode }) {
+  return children;
 }
