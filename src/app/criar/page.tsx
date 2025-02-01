@@ -5,21 +5,23 @@ import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { Label } from '@/components/ui/label';
 import { Textarea } from '@/components/ui/textarea';
-import { Calendar, Heart, Music, Upload } from 'lucide-react';
+import { Calendar, ChevronDown, ChevronUp, Sparkles } from 'lucide-react';
 import { ImageUpload } from '@/components/ui/image-upload';
 import { useState, useEffect, Suspense } from 'react';
 import { TemplateType, templates } from '@/components/templates';
 import { useRouter, useSearchParams } from 'next/navigation';
 import { usePlan, PlanType, PLANS } from '@/contexts/PlanContext';
 import { toast } from 'sonner';
-import { optimizeImage } from '@/lib/imageOptimizer';
-import { supabase } from '@/lib/supabase';
 import slugify from 'slugify';
 import dynamic from 'next/dynamic';
 import heartAnimation from '../../../public/heart.json';
 import uploadAnimation from '../../../public/upload.json';
 import musicAnimation from '../../../public/music.json';
 import brushAnimation from '../../../public/brush.json';
+import { SignSelector } from '@/components/SignSelector';
+import { SignMatch } from '@/components/SignMatch';
+import { getSignMatch } from '@/lib/signos';
+import { cn } from '@/lib/utils';
 
 const Lottie = dynamic(() => import('lottie-react'), {
   ssr: false,
@@ -31,6 +33,7 @@ function CreateContent() {
   const { plan, setPlan } = usePlan();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [sessionId] = useState(() => crypto.randomUUID());
+  const [showSignSelector, setShowSignSelector] = useState(false);
 
   useEffect(() => {
     const planType = searchParams.get('plan') as PlanType;
@@ -52,6 +55,9 @@ function CreateContent() {
     isPrivate: false,
     password: '',
     confirmPassword: '',
+    signo1: '',
+    signo2: '',
+    curiosidades: false,
   });
 
   const [passwordMatch, setPasswordMatch] = useState(true);
@@ -153,6 +159,14 @@ function CreateContent() {
     } finally {
       setIsSubmitting(false);
     }
+  };
+
+  const handleSignSelect = (signo1: string, signo2: string) => {
+    setFormData((prev) => ({
+      ...prev,
+      signo1,
+      signo2,
+    }));
   };
 
   const Template = templates[formData.template];
@@ -329,6 +343,30 @@ function CreateContent() {
                       </div>
                     )}
                   </div>
+
+                  <div className="space-y-4 pt-4 border-t border-gray-100">
+                    <div className="flex items-center space-x-2">
+                      <input
+                        type="checkbox"
+                        id="curiosidades"
+                        className="w-4 h-4 text-romantic-500 border-gray-300 rounded focus:ring-romantic-500"
+                        checked={formData.curiosidades}
+                        onChange={(e) =>
+                          setFormData((prev) => ({
+                            ...prev,
+                            curiosidades: e.target.checked,
+                          }))
+                        }
+                      />
+                      <Label htmlFor="curiosidades">
+                        Deseja receber curiosidades sobre a data?
+                      </Label>
+                    </div>
+                    <p className="text-sm text-romantic-600">
+                      Se ativado, você receberá informações e curiosidades sobre
+                      a data que se conheceram após o pagamento.
+                    </p>
+                  </div>
                 </div>
               </CardContent>
             </Card>
@@ -410,7 +448,7 @@ function CreateContent() {
                 </div>
 
                 <div className="grid grid-cols-3 gap-4">
-                  {Object.entries(templates).map(([key, _]) => (
+                  {Object.entries(templates).map(([key]) => (
                     <button
                       key={key}
                       className={`aspect-[3/4] rounded-lg p-4 flex items-center justify-center text-center transition-all ${
@@ -428,6 +466,45 @@ function CreateContent() {
                       {key.charAt(0).toUpperCase() + key.slice(1)}
                     </button>
                   ))}
+                </div>
+              </CardContent>
+            </Card>
+
+            {/* Seção de Signos */}
+            <Card className="bg-white/80 backdrop-blur overflow-hidden">
+              <CardContent className="p-6">
+                <button
+                  onClick={() => setShowSignSelector(!showSignSelector)}
+                  className="w-full flex items-center justify-between text-left"
+                >
+                  <div className="flex items-center gap-2">
+                    <Sparkles className="w-5 h-5 text-romantic-500" />
+                    <div>
+                      <h2 className="text-xl font-semibold text-romantic-800">
+                        Compatibilidade Astrológica
+                      </h2>
+                      <p className="text-sm text-romantic-600">
+                        {formData.signo1 && formData.signo2
+                          ? `${formData.signo1} + ${formData.signo2}`
+                          : 'Descubra a compatibilidade do casal nos astros ✨'}
+                      </p>
+                    </div>
+                  </div>
+                  {showSignSelector ? (
+                    <ChevronUp className="w-5 h-5 text-romantic-500" />
+                  ) : (
+                    <ChevronDown className="w-5 h-5 text-romantic-500" />
+                  )}
+                </button>
+
+                <div
+                  className={`transition-all duration-300 ease-in-out ${
+                    showSignSelector
+                      ? 'max-h-[1000px] opacity-100 mt-6'
+                      : 'max-h-0 opacity-0 overflow-hidden'
+                  }`}
+                >
+                  <SignSelector onSelect={handleSignSelect} />
                 </div>
               </CardContent>
             </Card>
@@ -450,8 +527,73 @@ function CreateContent() {
                 </h2>
 
                 <div className="aspect-[9/16] bg-white rounded-lg shadow-lg overflow-hidden">
-                  <div className="w-full h-full overflow-auto">
-                    <Template {...formData} />
+                  <div className="w-full h-full overflow-y-auto">
+                    <Template
+                      {...formData}
+                      isPago={false}
+                      signosComponent={
+                        formData.signo1 && formData.signo2 ? (
+                          <SignMatch
+                            signo1={formData.signo1}
+                            signo2={formData.signo2}
+                            mensagem={getSignMatch(
+                              formData.signo1,
+                              formData.signo2
+                            )}
+                            isPago={false}
+                            variant={formData.template}
+                          />
+                        ) : null
+                      }
+                      curiosidadesComponent={
+                        formData.curiosidades ? (
+                          <Card
+                            className={cn(
+                              'p-6 space-y-6 mt-2',
+                              // Cada variante com seu estilo específico
+                              formData.template === 'romantico' &&
+                                'bg-romantic-50',
+                              formData.template === 'moderno' &&
+                                'bg-gray-950/80 backdrop-blur-xl border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
+                              formData.template === 'minimalista' &&
+                                'bg-gray-50 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-gray-100'
+                            )}
+                          >
+                            <div className="text-center">
+                              <h3
+                                className={cn(
+                                  'text-xl font-semibold mb-2',
+                                  formData.template === 'romantico' &&
+                                    'text-romantic-800',
+                                  formData.template === 'moderno' &&
+                                    'text-white',
+                                  formData.template === 'minimalista' &&
+                                    'text-gray-800'
+                                )}
+                              >
+                                Curiosidades sobre a data que nos conhecemos
+                              </h3>
+                              <p
+                                className={cn(
+                                  'text-sm blur-sm',
+                                  formData.template === 'romantico' &&
+                                    'text-romantic-600',
+                                  formData.template === 'moderno' &&
+                                    'text-gray-400',
+                                  formData.template === 'minimalista' &&
+                                    'text-gray-600'
+                                )}
+                              >
+                                Descubra músicas, eventos e momentos marcantes
+                                que aconteceram no dia em que suas histórias se
+                                cruzaram. Uma viagem no tempo para celebrar o
+                                início dessa linda jornada.
+                              </p>
+                            </div>
+                          </Card>
+                        ) : null
+                      }
+                    />
                   </div>
                 </div>
               </CardContent>

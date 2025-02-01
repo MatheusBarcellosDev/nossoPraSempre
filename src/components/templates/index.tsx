@@ -5,8 +5,6 @@ import { YouTubePlayer } from '@/components/ui/youtube-player';
 import { Music } from 'lucide-react';
 import { cn } from '@/lib/utils';
 
-export type TemplateType = 'romantico' | 'moderno' | 'minimalista';
-
 export interface TemplateProps {
   nome1: string;
   nome2: string;
@@ -14,16 +12,19 @@ export interface TemplateProps {
   mensagem: string;
   fotos: string[];
   musica?: string;
+  signo1?: string;
+  signo2?: string;
+  isPago?: boolean;
+  curiosidadesComponent?: React.ReactNode;
 }
 
-export const templates: Record<
-  TemplateType,
-  React.ComponentType<TemplateProps>
-> = {
+export const templates = {
   romantico: TemplateRomantico,
   moderno: TemplateModerno,
   minimalista: TemplateMinimalista,
-};
+} as const;
+
+export type TemplateType = keyof typeof templates;
 
 // Componente base para todos os templates
 export function BaseTemplate({
@@ -31,15 +32,41 @@ export function BaseTemplate({
   musica,
   variant = 'light',
   className,
+  signosComponent,
+  curiosidadesComponent,
 }: {
   children: React.ReactNode;
   musica?: string;
   variant?: 'light' | 'dark';
   className?: string;
+  signosComponent?: React.ReactNode;
+  curiosidadesComponent?: React.ReactNode;
 }) {
   return (
     <div className={cn('relative min-h-screen bg-white', className)}>
       {children}
+
+      {/* Seção de Signos */}
+      {signosComponent && (
+        <div
+          className={`w-full py-16 ${
+            variant === 'dark' ? 'bg-gray-950' : 'bg-romantic-50/50'
+          }`}
+        >
+          <div className="max-w-2xl mx-auto px-4">{signosComponent}</div>
+        </div>
+      )}
+
+      {/* Seção de Curiosidades */}
+      {curiosidadesComponent && (
+        <div
+          className={`w-full py-16 ${
+            variant === 'dark' ? 'bg-gray-950' : 'bg-romantic-50/50'
+          }`}
+        >
+          <div className="max-w-2xl mx-auto px-4">{curiosidadesComponent}</div>
+        </div>
+      )}
 
       {/* Música do Casal - comum a todos os templates */}
       {musica && (

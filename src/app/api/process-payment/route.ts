@@ -1,11 +1,9 @@
-import { NextResponse } from 'next/server';
 import { prisma } from '@/lib/prisma';
 import { sendSuccessEmail } from '@/lib/email';
-import { supabase } from '@/lib/supabase';
-import path from 'path';
 import slugify from 'slugify';
 import Stripe from 'stripe';
 import { randomBytes } from 'crypto';
+import { OpenAI } from 'openai';
 
 const stripe = new Stripe(process.env.STRIPE_SECRET_KEY!);
 
@@ -96,6 +94,8 @@ export async function POST(request: Request) {
         isPago: true,
         isPrivate: tempData.isPrivate || false,
         password: tempData.password,
+        signo1: tempData.signo1,
+        signo2: tempData.signo2,
       },
     });
 
@@ -112,6 +112,54 @@ export async function POST(request: Request) {
         });
       } catch (error) {
         console.error('Erro ao enviar email:', error);
+      }
+    }
+
+    // Verificar se o usuário optou por curiosidades sobre a data
+    if (tempData.curiosidades) {
+      try {
+        const openai = new OpenAI({
+          apiKey: process.env.OPENAI_API_KEY,
+        });
+
+        const prompt = `
+          Gere curiosidades sobre o dia ${tempData.data} em formato JSON. Inclua:
+          - 3 músicas populares do ano em que essa data ocorreu
+          - 3 eventos históricos que aconteceram EXATAMENTE neste dia e mês (independente do ano)
+          - 3 curiosidades interessantes sobre este dia específico (como celebridades que nasceram nesta data, fatos históricos deste dia, ou eventos culturais que ocorrem tradicionalmente nesta data)
+          
+          Responda apenas com o JSON no seguinte formato:
+          {
+            "musicas": ["música 1", "música 2", "música 3"],
+            "eventos": ["evento 1", "evento 2", "evento 3"],
+            "curiosidades": ["curiosidade 1", "curiosidade 2", "curiosidade 3"]
+          }
+        `;
+
+        const completion = await openai.chat.completions.create({
+          messages: [{ role: 'system', content: prompt }],
+          model: 'gpt-4o-mini',
+          temperature: 0.7,
+          response_format: { type: 'json_object' },
+        });
+
+        const response = completion.choices[0].message.content;
+
+        if (!response) {
+          throw new Error('Sem resposta da API');
+        }
+
+        const curiosidadesData = JSON.parse(response);
+
+        // Atualizar a página com as curiosidades
+        await prisma.page.update({
+          where: { slug },
+          data: {
+            curiosidadesData: curiosidadesData,
+          },
+        });
+      } catch (error) {
+        console.error('Erro ao obter curiosidades:', error);
       }
     }
 

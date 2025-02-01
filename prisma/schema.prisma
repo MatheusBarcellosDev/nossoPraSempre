@@ -24,6 +24,10 @@ model Page {
   updatedAt DateTime @updatedAt
   isPrivate Boolean  @default(false)
   password  String?
+  signo1    String?
+  signo2    String?
+  curiosidadesData Json?
+  description String?
 }
 
 model User {

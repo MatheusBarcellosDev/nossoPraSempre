@@ -4,6 +4,8 @@ import { useEffect, useState } from 'react';
 import { usePathname } from 'next/navigation';
 import dynamic from 'next/dynamic';
 import { templates } from '@/components/templates';
+import { SignMatch } from '@/components/SignMatch';
+import { getSignMatch } from '@/lib/signos';
 import {
   Share2,
   Printer,
@@ -15,6 +17,9 @@ import {
 } from 'lucide-react';
 import { toast } from 'sonner';
 import { PasswordCheck } from '@/components/PasswordCheck';
+import { Card } from '@/components/ui/card';
+import { ChevronDown } from 'lucide-react';
+import { cn } from '@/lib/utils';
 
 const QRCodeCanvas = dynamic(
   () => import('qrcode.react').then((mod) => mod.QRCodeCanvas),
@@ -34,6 +39,13 @@ interface PageData {
   isPago: boolean;
   isPrivate?: boolean;
   password?: string;
+  signo1?: string;
+  signo2?: string;
+  curiosidadesData?: {
+    musicas: string[];
+    eventos: string[];
+    curiosidades: string[];
+  };
 }
 
 export default function Page() {
@@ -43,6 +55,7 @@ export default function Page() {
   const pathname = usePathname();
   const fullUrl =
     typeof window !== 'undefined' ? `${window.location.origin}${pathname}` : '';
+  const [isExpanded, setIsExpanded] = useState(false);
 
   useEffect(() => {
     const fetchData = async () => {
@@ -119,6 +132,17 @@ export default function Page() {
   }
 
   const Template = templates[pageData.template];
+
+  const signosComponent =
+    pageData.signo1 && pageData.signo2 ? (
+      <SignMatch
+        signo1={pageData.signo1}
+        signo2={pageData.signo2}
+        mensagem={getSignMatch(pageData.signo1, pageData.signo2)}
+        isPago={pageData.isPago}
+        variant={pageData.template}
+      />
+    ) : null;
 
   const handleWhatsAppShare = async () => {
     try {
@@ -372,22 +396,149 @@ export default function Page() {
   };
 
   return (
-    <>
-      <script
-        type="application/ld+json"
-        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
-      />
-      {/* Meta tag para prevenir zoom no mobile */}
-      <meta
-        name="viewport"
-        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
-      />
+    <div className="relative">
+      <Template
+        {...pageData}
+        signosComponent={signosComponent}
+        curiosidadesComponent={
+          pageData.curiosidadesData ? (
+            <Card
+              className={cn(
+                'p-6',
+                // Cada variante com seu estilo específico
+                pageData.template === 'romantico' && 'bg-romantic-50',
+                pageData.template === 'moderno' &&
+                  'bg-gray-950/80 backdrop-blur-xl border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
+                pageData.template === 'minimalista' &&
+                  'bg-gray-50 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-gray-100'
+              )}
+            >
+              <div>
+                <button
+                  onClick={() => setIsExpanded(!isExpanded)}
+                  className="w-full flex items-center justify-between"
+                >
+                  <h3
+                    className={cn(
+                      'text-xl font-semibold',
+                      pageData.template === 'romantico' && 'text-romantic-800',
+                      pageData.template === 'moderno' && 'text-white',
+                      pageData.template === 'minimalista' && 'text-gray-800'
+                    )}
+                  >
+                    Curiosidades sobre a data que nos conhecemos
+                  </h3>
+                  <ChevronDown
+                    className={cn(
+                      'w-5 h-5 transition-transform duration-200',
+                      isExpanded && 'transform rotate-180',
+                      pageData.template === 'romantico' && 'text-romantic-800',
+                      pageData.template === 'moderno' && 'text-white',
+                      pageData.template === 'minimalista' && 'text-gray-800'
+                    )}
+                  />
+                </button>
+                <div
+                  className={cn(
+                    'overflow-hidden transition-all duration-200',
+                    isExpanded ? 'max-h-[800px] mt-4' : 'max-h-0'
+                  )}
+                >
+                  {/* Músicas Populares */}
+                  <div className="mb-6">
+                    <h4
+                      className={cn(
+                        'font-medium mb-2',
+                        pageData.template === 'romantico' &&
+                          'text-romantic-700',
+                        pageData.template === 'moderno' && 'text-gray-200',
+                        pageData.template === 'minimalista' && 'text-gray-700'
+                      )}
+                    >
+                      Músicas Populares da Época
+                    </h4>
+                    <ul
+                      className={cn(
+                        'list-disc pl-5 space-y-1',
+                        pageData.template === 'romantico' &&
+                          'text-romantic-600',
+                        pageData.template === 'moderno' && 'text-gray-400',
+                        pageData.template === 'minimalista' && 'text-gray-600'
+                      )}
+                    >
+                      {pageData.curiosidadesData.musicas.map(
+                        (musica, index) => (
+                          <li key={index}>{musica}</li>
+                        )
+                      )}
+                    </ul>
+                  </div>
 
-      <div className="hidden">
-        <div id="qr-code">
-          <QRCodeCanvas value={fullUrl} size={200} />
-        </div>
-      </div>
+                  {/* Eventos Históricos */}
+                  <div className="mb-6">
+                    <h4
+                      className={cn(
+                        'font-medium mb-2',
+                        pageData.template === 'romantico' &&
+                          'text-romantic-700',
+                        pageData.template === 'moderno' && 'text-gray-200',
+                        pageData.template === 'minimalista' && 'text-gray-700'
+                      )}
+                    >
+                      Eventos Históricos Neste Dia
+                    </h4>
+                    <ul
+                      className={cn(
+                        'list-disc pl-5 space-y-1',
+                        pageData.template === 'romantico' &&
+                          'text-romantic-600',
+                        pageData.template === 'moderno' && 'text-gray-400',
+                        pageData.template === 'minimalista' && 'text-gray-600'
+                      )}
+                    >
+                      {pageData.curiosidadesData.eventos.map(
+                        (evento, index) => (
+                          <li key={index}>{evento}</li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+
+                  {/* Curiosidades */}
+                  <div>
+                    <h4
+                      className={cn(
+                        'font-medium mb-2',
+                        pageData.template === 'romantico' &&
+                          'text-romantic-700',
+                        pageData.template === 'moderno' && 'text-gray-200',
+                        pageData.template === 'minimalista' && 'text-gray-700'
+                      )}
+                    >
+                      Curiosidades Especiais
+                    </h4>
+                    <ul
+                      className={cn(
+                        'list-disc pl-5 space-y-1',
+                        pageData.template === 'romantico' &&
+                          'text-romantic-600',
+                        pageData.template === 'moderno' && 'text-gray-400',
+                        pageData.template === 'minimalista' && 'text-gray-600'
+                      )}
+                    >
+                      {pageData.curiosidadesData.curiosidades.map(
+                        (curiosidade, index) => (
+                          <li key={index}>{curiosidade}</li>
+                        )
+                      )}
+                    </ul>
+                  </div>
+                </div>
+              </div>
+            </Card>
+          ) : null
+        }
+      />
 
       {/* Botões de compartilhamento */}
       <div className="fixed bottom-6 right-6 flex flex-col gap-2 items-end z-50">
@@ -444,8 +595,21 @@ export default function Page() {
         </div>
       </div>
 
-      {/* Template */}
-      <Template {...pageData} />
-    </>
+      <script
+        type="application/ld+json"
+        dangerouslySetInnerHTML={{ __html: JSON.stringify(jsonLd) }}
+      />
+      {/* Meta tag para prevenir zoom no mobile */}
+      <meta
+        name="viewport"
+        content="width=device-width, initial-scale=1, maximum-scale=1, user-scalable=0"
+      />
+
+      <div className="hidden">
+        <div id="qr-code">
+          <QRCodeCanvas value={fullUrl} size={200} />
+        </div>
+      </div>
+    </div>
   );
 }

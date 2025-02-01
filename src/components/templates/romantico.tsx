@@ -3,6 +3,8 @@ import { TemplateProps } from '.';
 import { LoveCounter } from '@/components/ui/love-counter';
 import { calcularBodas, proximaBoda } from '@/lib/bodas';
 import { BaseTemplate } from '.';
+import ReactModal from 'react-modal';
+import { useState } from 'react';
 
 export function TemplateRomantico({
   nome1,
@@ -11,12 +13,34 @@ export function TemplateRomantico({
   mensagem,
   fotos,
   musica,
-}: TemplateProps) {
+  signosComponent,
+  curiosidadesComponent,
+}: TemplateProps & {
+  signosComponent?: React.ReactNode;
+  curiosidadesComponent?: React.ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
   const bodaAtual = data ? calcularBodas(new Date(data)) : null;
   const proximaBodas = data ? proximaBoda(new Date(data)) : null;
 
+  const openModal = (foto: string) => {
+    setSelectedImage(foto);
+    setIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsOpen(false);
+    setSelectedImage(null);
+  };
+
   return (
-    <BaseTemplate musica={musica}>
+    <BaseTemplate
+      musica={musica}
+      signosComponent={signosComponent}
+      curiosidadesComponent={curiosidadesComponent}
+    >
       <div className="min-h-screen bg-gradient-to-br from-romantic-50 via-white to-romantic-50 p-4 overflow-auto relative">
         {/* Elementos decorativos */}
         <div className="absolute inset-0 overflow-hidden pointer-events-none">
@@ -55,6 +79,7 @@ export function TemplateRomantico({
                 <div
                   key={index}
                   className="group relative aspect-square rounded-3xl overflow-hidden shadow-xl hover:shadow-2xl transition-all duration-500"
+                  onClick={() => openModal(foto)}
                 >
                   <div className="absolute inset-0 bg-gradient-to-t from-romantic-900/50 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -70,6 +95,31 @@ export function TemplateRomantico({
               ))}
             </div>
           )}
+
+          {/* Modal para exibir a imagem */}
+          <ReactModal
+            isOpen={isOpen}
+            onRequestClose={closeModal}
+            contentLabel="Imagem Ampliada"
+            className="fixed inset-0 flex items-center justify-center bg-black/75"
+            overlayClassName="fixed inset-0 bg-black/50"
+          >
+            <div className="relative max-w-3xl max-h-[80vh] w-full h-full flex items-center justify-center">
+              <button
+                onClick={closeModal}
+                className="absolute top-2 right-2 text-white text-2xl"
+              >
+                &times;
+              </button>
+              {selectedImage && (
+                <img
+                  src={selectedImage}
+                  alt="Imagem Ampliada"
+                  className="max-w-full max-h-full"
+                />
+              )}
+            </div>
+          </ReactModal>
 
           {/* Mensagem */}
           <div className="relative bg-gradient-to-br from-romantic-50 to-romantic-100 p-8 rounded-3xl shadow-lg mb-16">

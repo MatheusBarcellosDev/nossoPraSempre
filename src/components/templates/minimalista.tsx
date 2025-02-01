@@ -2,6 +2,9 @@ import { Heart } from 'lucide-react';
 import { TemplateProps } from '.';
 import { LoveCounter } from '@/components/ui/love-counter';
 import { BaseTemplate } from '.';
+import { calcularBodas, proximaBoda } from '@/lib/bodas';
+import ReactModal from 'react-modal';
+import { useState } from 'react';
 
 export function TemplateMinimalista({
   nome1,
@@ -10,9 +13,34 @@ export function TemplateMinimalista({
   mensagem,
   fotos,
   musica,
-}: TemplateProps) {
+  signosComponent,
+  curiosidadesComponent,
+}: TemplateProps & {
+  signosComponent?: React.ReactNode;
+  curiosidadesComponent?: React.ReactNode;
+}) {
+  const [isOpen, setIsOpen] = useState(false);
+  const [selectedImage, setSelectedImage] = useState<string | null>(null);
+
+  const bodaAtual = data ? calcularBodas(new Date(data)) : null;
+  const proximaBodas = data ? proximaBoda(new Date(data)) : null;
+
+  const openModal = (foto: string) => {
+    setSelectedImage(foto);
+    setIsOpen(true);
+  };
+
+  const closeModal = () => {
+    setIsOpen(false);
+    setSelectedImage(null);
+  };
+
   return (
-    <BaseTemplate musica={musica}>
+    <BaseTemplate
+      musica={musica}
+      signosComponent={signosComponent}
+      curiosidadesComponent={curiosidadesComponent}
+    >
       <div className="min-h-screen bg-white">
         {/* Header */}
         <header className="py-32 px-4">
@@ -52,6 +80,7 @@ export function TemplateMinimalista({
                 <div
                   key={index}
                   className="group relative aspect-[4/5] overflow-hidden rounded-2xl shadow-[0_4px_20px_-4px_rgba(0,0,0,0.1)]"
+                  onClick={() => openModal(foto)}
                 >
                   <div className="absolute inset-0 bg-black/0 group-hover:bg-black/10 transition-colors duration-700" />
                   {/* eslint-disable-next-line @next/next/no-img-element */}
@@ -64,6 +93,31 @@ export function TemplateMinimalista({
               ))}
             </div>
           )}
+
+          {/* Modal para exibir a imagem */}
+          <ReactModal
+            isOpen={isOpen}
+            onRequestClose={closeModal}
+            contentLabel="Imagem Ampliada"
+            className="fixed inset-0 flex items-center justify-center bg-black/75"
+            overlayClassName="fixed inset-0 bg-black/50"
+          >
+            <div className="relative max-w-3xl max-h-[80vh] w-full h-full flex items-center justify-center">
+              <button
+                onClick={closeModal}
+                className="absolute top-2 right-2 text-white text-2xl"
+              >
+                &times;
+              </button>
+              {selectedImage && (
+                <img
+                  src={selectedImage}
+                  alt="Imagem Ampliada"
+                  className="max-w-full max-h-full"
+                />
+              )}
+            </div>
+          </ReactModal>
         </main>
 
         {/* Footer */}

@@ -5,8 +5,11 @@ import { useRouter, useSearchParams } from 'next/navigation';
 import { toast } from 'sonner';
 import { Button } from '@/components/ui/button';
 import { Card } from '@/components/ui/card';
-import { CreditCard } from 'lucide-react';
+import { CreditCard, ChevronDown } from 'lucide-react';
 import { templates, TemplateType } from '@/components/templates';
+import { SignMatch } from '@/components/SignMatch';
+import { getSignMatch } from '@/lib/signos';
+import { cn } from '@/lib/utils';
 
 const PLANS = {
   basic: {
@@ -36,6 +39,15 @@ interface PageData {
   plano: keyof typeof PLANS;
   isPago: boolean;
   createdAt: string;
+  signo1?: string;
+  signo2?: string;
+  curiosidades?: string;
+}
+
+interface CuriosidadesData {
+  musicas: string[];
+  eventos: string[];
+  curiosidades: string[];
 }
 
 function FinalizarContent() {
@@ -43,6 +55,9 @@ function FinalizarContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState<number>(30 * 60); // 30 minutos em segundos
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
+  const [testCuriosidades, setTestCuriosidades] =
+    useState<CuriosidadesData | null>(null);
+  const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
   const slug = searchParams.get('slug');
@@ -173,7 +188,95 @@ function FinalizarContent() {
             <div className="lg:col-span-1">
               <Card className="overflow-hidden relative shadow-lg h-full">
                 <div className={!pageData.isPago ? 'blur-[2px]' : ''}>
-                  <Template {...pageData} />
+                  <Template
+                    {...pageData}
+                    signosComponent={
+                      pageData.signo1 && pageData.signo2 ? (
+                        <SignMatch
+                          signo1={pageData.signo1}
+                          signo2={pageData.signo2}
+                          mensagem={getSignMatch(
+                            pageData.signo1,
+                            pageData.signo2
+                          )}
+                          isPago={pageData.isPago}
+                          variant={pageData.template}
+                        />
+                      ) : null
+                    }
+                    curiosidadesComponent={
+                      pageData.curiosidades ? (
+                        <Card
+                          className={cn(
+                            'p-6 mt-2',
+                            // Cada variante com seu estilo específico
+                            pageData.template === 'romantico' &&
+                              'bg-romantic-50',
+                            pageData.template === 'moderno' &&
+                              'bg-gray-950/80 backdrop-blur-xl border-white/10 shadow-[0_8px_32px_rgba(0,0,0,0.4)]',
+                            pageData.template === 'minimalista' &&
+                              'bg-gray-50 shadow-[0_4px_20px_-4px_rgba(0,0,0,0.05)] border-gray-100'
+                          )}
+                        >
+                          <div>
+                            <button
+                              onClick={() => setIsExpanded(!isExpanded)}
+                              className="w-full flex items-center justify-between"
+                            >
+                              <h3
+                                className={cn(
+                                  'text-xl font-semibold',
+                                  pageData.template === 'romantico' &&
+                                    'text-romantic-800',
+                                  pageData.template === 'moderno' &&
+                                    'text-white',
+                                  pageData.template === 'minimalista' &&
+                                    'text-gray-800'
+                                )}
+                              >
+                                Curiosidades sobre a data que nos conhecemos
+                              </h3>
+                              <ChevronDown
+                                className={cn(
+                                  'w-5 h-5 transition-transform duration-200',
+                                  isExpanded && 'transform rotate-180',
+                                  pageData.template === 'romantico' &&
+                                    'text-romantic-800',
+                                  pageData.template === 'moderno' &&
+                                    'text-white',
+                                  pageData.template === 'minimalista' &&
+                                    'text-gray-800'
+                                )}
+                              />
+                            </button>
+                            <div
+                              className={cn(
+                                'overflow-hidden transition-all duration-200 text-center',
+                                isExpanded ? 'max-h-96 mt-4' : 'max-h-0'
+                              )}
+                            >
+                              <p
+                                className={cn(
+                                  'text-sm blur-sm',
+                                  pageData.template === 'romantico' &&
+                                    'text-romantic-600',
+                                  pageData.template === 'moderno' &&
+                                    'text-gray-400',
+                                  pageData.template === 'minimalista' &&
+                                    'text-gray-600'
+                                )}
+                              >
+                                Descubra músicas, eventos e momentos marcantes
+                                que aconteceram no dia em que suas histórias se
+                                cruzaram. Uma viagem no tempo para celebrar o
+                                início dessa linda jornada.
+                              </p>
+                            </div>
+                          </div>
+                        </Card>
+                      ) : null
+                    }
+                  />
                 </div>
 
                 {!pageData.isPago && (
@@ -189,59 +292,72 @@ function FinalizarContent() {
               </Card>
             </div>
 
-            {/* Coluna do Pagamento */}
-            <div className="lg:col-span-1">
-              <Card className="p-8 shadow-lg">
-                <div className="text-center space-y-6">
+            {/* Coluna do Pagamento e Compatibilidade */}
+            <div className="lg:col-span-1 space-y-6">
+              {/* Card de Pagamento */}
+              <Card className="p-6 shadow-lg">
+                <div className="text-center space-y-5">
                   <div>
-                    <h2 className="text-2xl font-semibold text-romantic-800">
+                    <h2 className="text-xl font-semibold text-romantic-800">
                       Finalizar Pagamento
                     </h2>
-                    <p className="text-romantic-600 mt-1">
+                    <p className="text-romantic-600 text-sm mt-1">
                       Escolha a forma de pagamento
                     </p>
                   </div>
 
-                  <div className="py-4 px-6 bg-romantic-50 rounded-lg">
+                  <div className="py-3 px-4 bg-romantic-50 rounded-lg">
                     <div className="flex flex-col items-center">
-                      <span className="text-romantic-600 text-sm font-medium mb-1">
+                      <span className="text-romantic-600 text-sm mb-1">
                         Eternize seus momentos por apenas
                       </span>
-                      <p className="text-4xl font-bold text-romantic-800 mb-1">
+                      <p className="text-3xl font-bold text-romantic-800 mb-0.5">
                         R$ {PLANS[pageData.plano].price.toFixed(2)}
                       </p>
-                      <p className="text-romantic-500 text-sm">
+                      <p className="text-romantic-500 text-xs">
+                        com acesso{' '}
                         {PLANS[pageData.plano].duration === 'vitalício'
-                          ? 'com acesso vitalício'
-                          : `com acesso por ${PLANS[pageData.plano].duration}`}
+                          ? 'vitalício'
+                          : `por ${PLANS[pageData.plano].duration}`}
                       </p>
                     </div>
                   </div>
 
                   {/* Tabs de Pagamento */}
                   <div className="border-b border-romantic-200">
-                    <div className="flex space-x-4">
-                      <button className="px-4 py-2 text-romantic-800 border-b-2 border-romantic-500 font-medium">
+                    <div className="flex space-x-6">
+                      <button className="px-4 py-2 text-romantic-800 border-b-2 border-romantic-500 font-medium text-sm">
                         Cartão de Crédito
                       </button>
-                      <button className="px-4 py-2 text-romantic-400 cursor-not-allowed">
+                      <button className="px-4 py-2 text-romantic-400 cursor-not-allowed text-sm">
                         PIX (em breve)
                       </button>
                     </div>
                   </div>
 
-                  <div className="space-y-4">
+                  <div>
                     <Button
                       onClick={handlePayment}
                       disabled={isProcessingPayment}
-                      className="w-full py-6 text-lg bg-romantic-600 hover:bg-romantic-700"
+                      className="w-full py-5 text-base bg-romantic-600 hover:bg-romantic-700"
                     >
-                      <CreditCard className="mr-2 h-5 w-5" />
+                      <CreditCard className="mr-2 h-4 w-4" />
                       {isProcessingPayment ? 'Processando...' : 'Continuar'}
                     </Button>
                   </div>
                 </div>
               </Card>
+
+              {/* Card de Compatibilidade */}
+              {pageData.signo1 && pageData.signo2 && (
+                <SignMatch
+                  signo1={pageData.signo1}
+                  signo2={pageData.signo2}
+                  mensagem={getSignMatch(pageData.signo1, pageData.signo2)}
+                  isPago={pageData.isPago}
+                  variant={pageData.template}
+                />
+              )}
             </div>
           </div>
         </div>

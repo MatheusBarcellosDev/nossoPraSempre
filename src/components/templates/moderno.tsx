@@ -13,7 +13,14 @@ export function TemplateModerno({
   mensagem,
   fotos,
   musica,
-}: TemplateProps) {
+  signo1,
+  signo2,
+  signosComponent,
+  curiosidadesComponent,
+}: TemplateProps & {
+  signosComponent?: React.ReactNode;
+  curiosidadesComponent?: React.ReactNode;
+}) {
   const sliderSettings = {
     dots: true,
     infinite: true,
@@ -35,7 +42,12 @@ export function TemplateModerno({
   };
 
   return (
-    <BaseTemplate musica={musica} variant="dark">
+    <BaseTemplate
+      musica={musica}
+      variant="dark"
+      signosComponent={signosComponent}
+      curiosidadesComponent={curiosidadesComponent}
+    >
       <div className="min-h-screen bg-gradient-to-br from-gray-950 via-romantic-950 to-gray-950 text-white p-4 overflow-auto">
         {/* Elementos decorativos */}
         <div className="fixed inset-0 overflow-hidden pointer-events-none">
@@ -69,21 +81,37 @@ export function TemplateModerno({
           {fotos.length > 0 && (
             <div className="px-4">
               <div className="relative rounded-3xl overflow-hidden shadow-2xl">
-                <Slider {...sliderSettings}>
-                  {fotos.map((foto, index) => (
-                    <div key={index} className="relative">
-                      <div className="flex items-center justify-center bg-gray-900/5 min-h-[300px] md:min-h-[500px]">
-                        {/* eslint-disable-next-line @next/next/no-img-element */}
-                        <img
-                          src={foto}
-                          alt={`Momento ${index + 1}`}
-                          className="w-full h-full object-contain max-h-[70vh]"
-                        />
-                        <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-50" />
-                      </div>
+                {fotos.length === 1 ? (
+                  // Quando tiver apenas uma foto
+                  <div className="relative">
+                    <div className="flex items-center justify-center bg-gray-900/5 min-h-[300px] md:min-h-[500px]">
+                      {/* eslint-disable-next-line @next/next/no-img-element */}
+                      <img
+                        src={fotos[0]}
+                        alt="Momento especial"
+                        className="w-full h-full object-contain max-h-[70vh]"
+                      />
+                      <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-50" />
                     </div>
-                  ))}
-                </Slider>
+                  </div>
+                ) : (
+                  // Quando tiver mais de uma foto
+                  <Slider {...sliderSettings}>
+                    {fotos.map((foto, index) => (
+                      <div key={index} className="relative">
+                        <div className="flex items-center justify-center bg-gray-900/5 min-h-[300px] md:min-h-[500px]">
+                          {/* eslint-disable-next-line @next/next/no-img-element */}
+                          <img
+                            src={foto}
+                            alt={`Momento ${index + 1}`}
+                            className="w-full h-full object-contain max-h-[70vh]"
+                          />
+                          <div className="absolute inset-0 bg-gradient-to-t from-black/50 to-transparent opacity-50" />
+                        </div>
+                      </div>
+                    ))}
+                  </Slider>
+                )}
               </div>
             </div>
           )}
