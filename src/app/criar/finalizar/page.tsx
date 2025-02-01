@@ -44,19 +44,11 @@ interface PageData {
   curiosidades?: string;
 }
 
-interface CuriosidadesData {
-  musicas: string[];
-  eventos: string[];
-  curiosidades: string[];
-}
-
 function FinalizarContent() {
   const [pageData, setPageData] = useState<PageData | null>(null);
   const [isLoading, setIsLoading] = useState(true);
   const [timeLeft, setTimeLeft] = useState<number>(30 * 60); // 30 minutos em segundos
   const [isProcessingPayment, setIsProcessingPayment] = useState(false);
-  const [testCuriosidades, setTestCuriosidades] =
-    useState<CuriosidadesData | null>(null);
   const [isExpanded, setIsExpanded] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();

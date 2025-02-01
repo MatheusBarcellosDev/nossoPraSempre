@@ -34,13 +34,6 @@ const SignMatch = dynamic(
   }
 );
 
-const QRCodeSVG = dynamic(
-  () => import('qrcode.react').then((mod) => mod.QRCodeSVG),
-  {
-    ssr: false,
-  }
-);
-
 function CreateContent() {
   const router = useRouter();
   const searchParams = useSearchParams();
