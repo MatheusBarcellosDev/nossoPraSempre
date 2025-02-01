@@ -19,13 +19,27 @@ import uploadAnimation from '../../../public/upload.json';
 import musicAnimation from '../../../public/music.json';
 import brushAnimation from '../../../public/brush.json';
 import { SignSelector } from '@/components/SignSelector';
-import { SignMatch } from '@/components/SignMatch';
 import { getSignMatch } from '@/lib/signos';
 import { cn } from '@/lib/utils';
 
 const Lottie = dynamic(() => import('lottie-react'), {
   ssr: false,
 });
+
+const SignMatch = dynamic(
+  () => import('@/components/SignMatch').then((mod) => mod.SignMatch),
+  {
+    loading: () => <div>Carregando...</div>,
+    ssr: false,
+  }
+);
+
+const QRCodeSVG = dynamic(
+  () => import('qrcode.react').then((mod) => mod.QRCodeSVG),
+  {
+    ssr: false,
+  }
+);
 
 function CreateContent() {
   const router = useRouter();
