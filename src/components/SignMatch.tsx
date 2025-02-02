@@ -1,6 +1,6 @@
 'use client';
 
-import Lottie from 'lottie-react';
+import dynamic from 'next/dynamic';
 import { Card } from './ui/card';
 import { Heart } from 'lucide-react';
 import { cn } from '../lib/utils';
@@ -18,6 +18,10 @@ import sagitarioAnimation from '../..//public/signos/sagittarius.json';
 import capricornioAnimation from '../..//public/signos/capricorn.json';
 import aquarioAnimation from '../..//public/signos/aquarius.json';
 import peixesAnimation from '../..//public/signos/pisces.json';
+
+const Lottie = dynamic(() => import('lottie-react'), {
+  ssr: false,
+});
 
 const signos = {
   Áries: ariesAnimation,
