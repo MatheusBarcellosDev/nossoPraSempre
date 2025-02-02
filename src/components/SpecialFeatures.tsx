@@ -107,13 +107,13 @@ export function SpecialFeatures() {
             </Card>
           </motion.div>
 
-          <div className="md:col-span-3 flex justify-center gap-6 md:gap-8">
+          <div className="md:col-span-3 flex flex-col md:flex-row justify-center gap-6 md:gap-8">
             <motion.div
               initial={{ opacity: 0, y: 20 }}
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.4 }}
-              className="w-full md:w-[calc(33.333%-1rem)] max-w-[400px]"
+              className="w-full md:w-[calc(33.333%-1rem)] max-w-none md:max-w-[400px]"
             >
               <Card className="group bg-white hover:bg-gradient-to-br hover:from-romantic-50 hover:to-romantic-100 shadow-lg hover:shadow-xl transition-all duration-500 border-romantic-100 h-[280px]">
                 <CardHeader className="p-8 text-center space-y-4">
@@ -140,7 +140,7 @@ export function SpecialFeatures() {
               whileInView={{ opacity: 1, y: 0 }}
               viewport={{ once: true }}
               transition={{ duration: 0.8, delay: 0.5 }}
-              className="w-full md:w-[calc(33.333%-1rem)] max-w-[400px]"
+              className="w-full md:w-[calc(33.333%-1rem)] max-w-none md:max-w-[400px]"
             >
               <Card className="group bg-white hover:bg-gradient-to-br hover:from-romantic-50 hover:to-romantic-100 shadow-lg hover:shadow-xl transition-all duration-500 border-romantic-100 h-[280px]">
                 <CardHeader className="p-8 text-center space-y-4">
